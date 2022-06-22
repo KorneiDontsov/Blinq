@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blinq", "Blinq\Blinq.csproj", "{9921AD5F-6BD5-41AC-A55D-CDD5FA423C40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blinq.Benchmarks", "Blinq.Benchmarks\Blinq.Benchmarks.csproj", "{3A3A9C40-2A28-40D7-A865-1CB78857E38C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blinq.Tests", "Blinq.Tests\Blinq.Tests.csproj", "{7178193A-F2E9-434E-A0BF-EA8DD0DFC486}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResearchBenchmarks", "ResearchBenchmarks\ResearchBenchmarks.csproj", "{7E735EA0-A2EC-4806-B255-9B495F6842BB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Develop|Any CPU = Develop|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9921AD5F-6BD5-41AC-A55D-CDD5FA423C40}.Develop|Any CPU.ActiveCfg = Debug|Any CPU
+		{9921AD5F-6BD5-41AC-A55D-CDD5FA423C40}.Develop|Any CPU.Build.0 = Debug|Any CPU
+		{3A3A9C40-2A28-40D7-A865-1CB78857E38C}.Develop|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A3A9C40-2A28-40D7-A865-1CB78857E38C}.Develop|Any CPU.Build.0 = Debug|Any CPU
+		{7178193A-F2E9-434E-A0BF-EA8DD0DFC486}.Develop|Any CPU.ActiveCfg = Debug|Any CPU
+		{7178193A-F2E9-434E-A0BF-EA8DD0DFC486}.Develop|Any CPU.Build.0 = Debug|Any CPU
+		{7E735EA0-A2EC-4806-B255-9B495F6842BB}.Develop|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E735EA0-A2EC-4806-B255-9B495F6842BB}.Develop|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+EndGlobal

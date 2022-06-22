@@ -1,0 +1,8 @@
+bin/
+obj/
+gen/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+*.DotSettings.user
+BenchmarkDotNet.Artifacts/
