@@ -10,12 +10,11 @@ public readonly struct Sequence<T, TIterator> where TIterator: IIterator<T> {
    public readonly TIterator Iterator;
 
    /// <summary>
-   ///    The estimated count of elements of the sequence.
-   ///    Zero, if the sequence is empty or the count of elements is not known.
+   ///    Expected count of the elements of the sequence. <see cref="Option{T}.None" />, if the count is not known.
    /// </summary>
-   public readonly int Count;
+   public readonly Option<int> Count;
 
-   public Sequence (TIterator iterator, int count = 0) {
+   public Sequence (TIterator iterator, Option<int> count = default) {
       Iterator = iterator;
       Count = count;
    }
