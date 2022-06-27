@@ -24,11 +24,11 @@ public struct EnumeratorIterator<T>: IIterator<T> {
 
 [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
 public static partial class Sequence {
-   static int GetCountOrDefault<T> (IEnumerable<T> enumerable) {
+   static Option<int> GetCountOrDefault<T> (IEnumerable<T> enumerable) {
       return enumerable switch {
          ICollection<T> collection => collection.Count,
          IReadOnlyCollection<T> collection => collection.Count,
-         _ => 0,
+         _ => default,
       };
    }
 

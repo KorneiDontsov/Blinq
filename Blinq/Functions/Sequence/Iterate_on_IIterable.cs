@@ -8,7 +8,7 @@ public static partial class Sequence {
       var count = iterable switch {
          ICollection<T> collection => collection.Count,
          IReadOnlyCollection<T> collection => collection.Count,
-         _ => 0,
+         _ => Option<int>.None,
       };
       return new Sequence<T, TIterator>(iterable.CreateIterator(), count);
    }
