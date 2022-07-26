@@ -29,7 +29,7 @@ public static partial class Sequence {
       return enumerable switch {
          ICollection<T> collection => collection.Count,
          IReadOnlyCollection<T> collection => collection.Count,
-         _ => default,
+         _ => Option.None,
       };
    }
 
