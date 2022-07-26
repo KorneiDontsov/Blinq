@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Blinq;
 
 /// <inheritdoc />
@@ -11,17 +13,21 @@ public struct ArrayIterator<T>: IIterator<T> {
       Index = 0;
    }
 
-   /// <inheritdoc />
-   public T Current => Array[Index++];
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulated Accumulate<TAccumulated, TAccumulator> (TAccumulator accumulator, TAccumulated seed)
+   where TAccumulator: IAccumulator<T, TAccumulated> {
+      foreach (var item in Array.AsSpan(Index)) {
+         ++Index;
+         if (accumulator.Invoke(item, ref seed)) break;
+      }
 
-   /// <inheritdoc />
-   public bool MoveNext () {
-      return Index < Array.Length;
+      return seed;
    }
 }
 
 public static partial class Sequence {
    /// <summary>Creates a sequence over <paramref name="array" />.</summary>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, ArrayIterator<T>> Iterate<T> (this T[] array) {
       return new Sequence<T, ArrayIterator<T>>(new ArrayIterator<T>(array), array.Length);
    }

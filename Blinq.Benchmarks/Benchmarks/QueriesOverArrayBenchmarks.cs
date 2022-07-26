@@ -9,6 +9,7 @@ public class QueriesOverArrayBenchmarks {
    static readonly Func<int, long> Selector = number => number * 2;
    static readonly Func<int, bool> Predicate = number => number % 3 == 0;
    static readonly Func<long, bool> PostPredicate = number => number % 3 == 0;
+   static readonly Func<int, int, int> AggregateFunc = (a, b) => a + b;
 
    int[] Array = null!;
 
@@ -21,7 +22,7 @@ public class QueriesOverArrayBenchmarks {
    }
 
    [Benchmark]
-   public int Foreach () {
+   public int SF_Sum () {
       var sum = 0;
       foreach (var item in Array) {
          sum += item;
@@ -31,102 +32,113 @@ public class QueriesOverArrayBenchmarks {
    }
 
    [Benchmark]
-   public int Iterate_Foreach () {
+   public int Sum () {
+      return Array.Sum();
+   }
+
+   [Benchmark]
+   public int Iterate_Sum () {
+      return Array.Iterate().Sum();
+   }
+
+   [Benchmark]
+   public long SF_Select_Sum () {
+      var sum = 0L;
+      foreach (var item in Array) {
+         sum += Selector(item);
+      }
+
+      return sum;
+   }
+
+   [Benchmark]
+   public long Select_Sum () {
+      return Array.Select(Selector).Sum();
+   }
+
+   [Benchmark]
+   public long Iterate_Select_Sum () {
+      return Array.Iterate().Select(Selector).Sum();
+   }
+
+   [Benchmark]
+   public int SF_Where_Sum () {
       var sum = 0;
-      foreach (var item in Array.Iterate()) {
-         sum += item;
+      foreach (var item in Array) {
+         if (Predicate(item)) sum += item;
       }
 
       return sum;
    }
 
    [Benchmark]
-   public long Select () {
+   public long Where_Sum () {
+      return Array.Where(Predicate).Sum();
+   }
+
+   [Benchmark]
+   public long Iterate_Where_Sum () {
+      return Array.Iterate().Where(Predicate).Sum();
+   }
+
+   [Benchmark]
+   public long SF_Where_Select_Sum () {
       var sum = 0L;
-      foreach (var item in Array.Select(Selector)) {
-         sum += item;
+      foreach (var item in Array) {
+         if (Predicate(item)) sum += Selector(item);
       }
 
       return sum;
    }
 
    [Benchmark]
-   public long Iterate_Select () {
+   public long Where_Select_Sum () {
+      return Array.Where(Predicate).Select(Selector).Sum();
+   }
+
+   [Benchmark]
+   public long Iterate_Where_Select_Sum () {
+      return Array.Iterate().Where(Predicate).Select(Selector).Sum();
+   }
+
+   [Benchmark]
+   public long SF_Select_Where_Sum () {
       var sum = 0L;
-      foreach (var item in Array.Iterate().Select(Selector)) {
-         sum += item;
+      foreach (var item in Array) {
+         var sItem = Selector(item);
+         if (PostPredicate(sItem)) sum += sItem;
       }
 
       return sum;
    }
 
    [Benchmark]
-   public long Where () {
-      var sum = 0;
-      foreach (var item in Array.Where(Predicate)) {
-         sum += item;
-      }
-
-      return sum;
+   public long Select_Where_Sum () {
+      return Array.Select(Selector).Where(PostPredicate).Sum();
    }
 
    [Benchmark]
-   public long Iterate_Where () {
-      var sum = 0;
-      foreach (var item in Array.Iterate().Where(Predicate)) {
-         sum += item;
-      }
-
-      return sum;
+   public long Iterate_Select_Where_Sum () {
+      return Array.Iterate().Select(Selector).Where(PostPredicate).Sum();
    }
 
    [Benchmark]
-   public long Where_Select () {
-      var sum = 0L;
-      foreach (var item in Array.Where(Predicate).Select(Selector)) {
-         sum += item;
+   public int SF_Aggregate () {
+      var accumulated = 0;
+      foreach (var item in Array) {
+         accumulated = AggregateFunc(accumulated, item);
       }
 
-      return sum;
-   }
-
-   [Benchmark]
-   public long Iterate_Where_Select () {
-      var sum = 0L;
-      foreach (var item in Array.Iterate().Where(Predicate).Select(Selector)) {
-         sum += item;
-      }
-
-      return sum;
-   }
-
-   [Benchmark]
-   public long Select_Where () {
-      var sum = 0L;
-      foreach (var item in Array.Select(Selector).Where(PostPredicate)) {
-         sum += item;
-      }
-
-      return sum;
-   }
-
-   [Benchmark]
-   public long Iterate_Select_Where () {
-      var sum = 0L;
-      foreach (var item in Array.Iterate().Select(Selector).Where(PostPredicate)) {
-         sum += item;
-      }
-
-      return sum;
+      return accumulated;
    }
 
    [Benchmark]
    public int Aggregate () {
-      return Array.Aggregate((a, b) => a + b);
+      return Array.Aggregate(AggregateFunc);
    }
 
    [Benchmark]
    public int Iterate_Aggregate () {
-      return Array.Iterate().Aggregate((a, b) => a + b).Value();
+      return Array.Iterate().Aggregate(AggregateFunc).Value();
    }
 }
