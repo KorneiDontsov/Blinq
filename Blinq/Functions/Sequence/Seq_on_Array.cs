@@ -8,17 +8,18 @@ public struct ArrayIterator<T>: IIterator<T> {
    readonly T[] Array;
    int Index;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ArrayIterator (T[] array) {
       Array = array;
       Index = 0;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulated Accumulate<TAccumulated, TAccumulator> (TAccumulator accumulator, TAccumulated seed)
-   where TAccumulator: IAccumulator<T, TAccumulated> {
+   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
       foreach (var item in Array.AsSpan(Index)) {
          ++Index;
-         if (accumulator.Invoke(item, ref seed)) break;
+         if (func.Invoke(item, ref seed)) break;
       }
 
       return seed;
@@ -28,7 +29,7 @@ public struct ArrayIterator<T>: IIterator<T> {
 public static partial class Sequence {
    /// <summary>Creates a sequence over <paramref name="array" />.</summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, ArrayIterator<T>> Iterate<T> (this T[] array) {
+   public static Sequence<T, ArrayIterator<T>> Seq<T> (this T[] array) {
       return new Sequence<T, ArrayIterator<T>>(new ArrayIterator<T>(array), array.Length);
    }
 }

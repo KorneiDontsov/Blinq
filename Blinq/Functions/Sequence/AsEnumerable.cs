@@ -7,6 +7,7 @@ namespace Blinq;
 sealed class IteratorAsEnumerable<T, TIterator>: IEnumerable<T> where TIterator: IIterator<T> {
    Option<TIterator> Iterator;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public IteratorAsEnumerable (TIterator iterator) {
       Iterator = iterator;
    }

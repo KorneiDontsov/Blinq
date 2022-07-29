@@ -2,18 +2,19 @@ using System.Runtime.CompilerServices;
 
 namespace Blinq;
 
-struct WhereAccumulator<T, TAccumulated, TNextAccumulator>: IAccumulator<T, TAccumulated> where TNextAccumulator: IAccumulator<T, TAccumulated> {
+struct WhereFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, TAccumulator> where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
    readonly Func<T, bool> Predicate;
-   TNextAccumulator NextAccumulator;
+   TInnerFoldFunc InnerFoldFunc;
 
-   public WhereAccumulator (Func<T, bool> predicate, TNextAccumulator nextAccumulator) {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public WhereFoldFunc (Func<T, bool> predicate, TInnerFoldFunc innerFoldFunc) {
       Predicate = predicate;
-      NextAccumulator = nextAccumulator;
+      InnerFoldFunc = innerFoldFunc;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (T item, ref TAccumulated accumulated) {
-      return Predicate(item) && NextAccumulator.Invoke(item, ref accumulated);
+   public bool Invoke (T item, ref TAccumulator accumulator) {
+      return Predicate(item) && InnerFoldFunc.Invoke(item, ref accumulator);
    }
 }
 
@@ -21,15 +22,16 @@ public struct WhereIterator<T, TIterator>: IIterator<T> where TIterator: IIterat
    TIterator Iterator;
    readonly Func<T, bool> Predicate;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public WhereIterator (TIterator iterator, Func<T, bool> predicate) {
       Iterator = iterator;
       Predicate = predicate;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulated Accumulate<TAccumulated, TAccumulator> (TAccumulator accumulator, TAccumulated seed)
-   where TAccumulator: IAccumulator<T, TAccumulated> {
-      return Iterator.Accumulate(new WhereAccumulator<T, TAccumulated, TAccumulator>(Predicate, accumulator), seed);
+   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
+      return Iterator.Fold(seed, new WhereFoldFunc<T, TAccumulator, TFoldFunc>(Predicate, func));
    }
 }
 

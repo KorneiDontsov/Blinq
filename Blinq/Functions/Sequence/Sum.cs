@@ -31,16 +31,16 @@ readonly struct Int64SumTrait: ISumTrait<long> {
    }
 }
 
-readonly struct SumAccumulator<T, TSumTrait>: IAccumulator<T, T> where TSumTrait: ISumTrait<T> {
+readonly struct SumFoldFunc<T, TSumTrait>: IFoldFunc<T, T> where TSumTrait: ISumTrait<T> {
    readonly TSumTrait SumTrait;
 
-   public SumAccumulator (TSumTrait sumTrait) {
+   public SumFoldFunc (TSumTrait sumTrait) {
       SumTrait = sumTrait;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (T item, ref T accumulated) {
-      accumulated = SumTrait.Sum(accumulated, item);
+   public bool Invoke (T item, ref T accumulator) {
+      accumulator = SumTrait.Sum(accumulator, item);
       return false;
    }
 }
@@ -50,7 +50,7 @@ public static partial class Sequence {
    static T Sum<T, TIterator, TSumTrait> (this in Sequence<T, TIterator> sequence, TSumTrait sumTrait)
    where TIterator: IIterator<T>
    where TSumTrait: ISumTrait<T> {
-      return sequence.Iterator.Accumulate(new SumAccumulator<T, TSumTrait>(sumTrait), sumTrait.Zero());
+      return sequence.Iterator.Fold(sumTrait.Zero(), new SumFoldFunc<T, TSumTrait>(sumTrait));
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

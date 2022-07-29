@@ -2,19 +2,20 @@ using System.Runtime.CompilerServices;
 
 namespace Blinq;
 
-struct SelectAccumulator<TIn, TAccumulated, TOut, TNextAccumulator>: IAccumulator<TIn, TAccumulated>
-where TNextAccumulator: IAccumulator<TOut, TAccumulated> {
+struct SelectFoldFunc<TIn, TAccumulator, TOut, TInnerFoldFunc>: IFoldFunc<TIn, TAccumulator>
+where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
    readonly Func<TIn, TOut> Selector;
-   TNextAccumulator NextAccumulator;
+   TInnerFoldFunc InnerFoldFunc;
 
-   public SelectAccumulator (Func<TIn, TOut> selector, TNextAccumulator nextAccumulator) {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public SelectFoldFunc (Func<TIn, TOut> selector, TInnerFoldFunc innerFoldFunc) {
       Selector = selector;
-      NextAccumulator = nextAccumulator;
+      InnerFoldFunc = innerFoldFunc;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (TIn item, ref TAccumulated accumulated) {
-      return NextAccumulator.Invoke(Selector(item), ref accumulated);
+   public bool Invoke (TIn item, ref TAccumulator accumulator) {
+      return InnerFoldFunc.Invoke(Selector(item), ref accumulator);
    }
 }
 
@@ -23,15 +24,16 @@ where TInIterator: IIterator<TIn> {
    TInIterator InIterator;
    readonly Func<TIn, TOut> Selector;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public SelectIterator (TInIterator inIterator, Func<TIn, TOut> selector) {
       InIterator = inIterator;
       Selector = selector;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulated Accumulate<TAccumulated, TAccumulator> (TAccumulator accumulator, TAccumulated seed)
-   where TAccumulator: IAccumulator<TOut, TAccumulated> {
-      return InIterator.Accumulate(new SelectAccumulator<TIn, TAccumulated, TOut, TAccumulator>(Selector, accumulator), seed);
+   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TOut, TAccumulator> {
+      return InIterator.Fold(seed, new SelectFoldFunc<TIn, TAccumulator, TOut, TFoldFunc>(Selector, func));
    }
 }
 

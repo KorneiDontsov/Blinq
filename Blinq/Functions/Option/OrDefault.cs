@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Blinq;
 
 public static partial class Option {
@@ -7,6 +9,7 @@ public static partial class Option {
    /// <returns>
    ///    The value of the current <paramref name="option" /> if it exists; otherwise, default value of <typeparamref name="T" />.
    /// </returns>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static T? OrDefault<T> (this in Option<T> option) {
       return option.ValueOrDefault;
    }

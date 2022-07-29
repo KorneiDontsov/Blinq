@@ -6,25 +6,25 @@ namespace Blinq;
 
 sealed class IteratorEnumerator<T, TIterator>: IEnumerator<T> where TIterator: IIterator<T> {
    TIterator Iterator;
-   Option<T> Item;
+   T Item = default!;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public IteratorEnumerator (TIterator iterator) {
       Iterator = iterator;
-      Item = Option.None;
    }
 
-   public T Current => Item.ValueOrDefault!;
+   public T Current => Item;
 
    object? IEnumerator.Current => Current;
 
    public bool MoveNext () {
-      Item = Iterator.Accumulate(new NextAccumulator<T>(), Option<T>.None);
-      return Item.HasValue;
+      Iterator.Fold(Option<T>.None, new NextFoldFunc<T>()).Deconstruct(out var hasValue, out Item);
+      return hasValue;
    }
 
    public void Dispose () { }
 
-   void IEnumerator.Reset () {
+   public void Reset () {
       throw new NotSupportedException();
    }
 }

@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Blinq;
 
 /// <summary>
@@ -14,15 +16,18 @@ public readonly struct Sequence<T, TIterator> where TIterator: IIterator<T> {
    /// </summary>
    public readonly Option<int> Count;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public Sequence (TIterator iterator, Option<int> count = default) {
       Iterator = iterator;
       Count = count;
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static implicit operator Sequence<T, TIterator> (TIterator iterator) {
       return new Sequence<T, TIterator>(iterator);
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static implicit operator TIterator (Sequence<T, TIterator> sequence) {
       return sequence.Iterator;
    }
@@ -31,6 +36,7 @@ public readonly struct Sequence<T, TIterator> where TIterator: IIterator<T> {
    ///    Boxes the iterator and returns a sequence over it that can be used in scenarios where multiple iterators with different types are used
    ///    (like in <see cref="Sequence.Flatten" />).
    /// </summary>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static implicit operator Sequence<T, IIterator<T>> (Sequence<T, TIterator> sequence) {
       return new Sequence<T, IIterator<T>>(sequence.Iterator, sequence.Count);
    }

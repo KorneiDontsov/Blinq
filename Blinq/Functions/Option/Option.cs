@@ -25,13 +25,14 @@ public readonly struct Option<T> {
    public readonly bool HasValue;
 
    /// <summary>Creates an <see cref="Option{T}" /> with the specified <paramref name="value" />.</summary>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public Option (T value) {
       ValueOrDefault = value;
       HasValue = true;
    }
 
    /// <summary>An <see cref="Option{T}" /> without value.</summary>
-   public static Option<T> None => default;
+   public static Option<T> None  { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default; }
 
    /// <summary>Creates an <see cref="Option{T}" /> with the specified <paramref name="value" />.</summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -46,5 +47,5 @@ public readonly struct Option<T> {
 }
 
 public static partial class Option {
-   public static ValueTuple None => default;
+   public static ValueTuple None { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default; }
 }

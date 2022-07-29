@@ -10,14 +10,15 @@ namespace Blinq;
 public struct EnumeratorIterator<T>: IIterator<T> {
    readonly IEnumerator<T> Enumerator;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public EnumeratorIterator (IEnumerator<T> enumerator) {
       Enumerator = enumerator;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulated Accumulate<TAccumulated, TAccumulator> (TAccumulator accumulator, TAccumulated seed)
-   where TAccumulator: IAccumulator<T, TAccumulated> {
-      while (Enumerator.MoveNext() && !accumulator.Invoke(Enumerator.Current, ref seed)) { }
+   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
+      while (Enumerator.MoveNext() && !func.Invoke(Enumerator.Current, ref seed)) { }
 
       return seed;
    }
@@ -25,6 +26,7 @@ public struct EnumeratorIterator<T>: IIterator<T> {
 
 [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
 public static partial class Sequence {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    static Option<int> GetCountOrDefault<T> (IEnumerable<T> enumerable) {
       return enumerable switch {
          ICollection<T> collection => collection.Count,
@@ -39,7 +41,7 @@ public static partial class Sequence {
    ///    If you want the enumerator guaranteed to be disposed then use overloads of this method.
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, EnumeratorIterator<T>> Iterate<T> (this IEnumerable<T> enumerable) {
+   public static Sequence<T, EnumeratorIterator<T>> Seq<T> (this IEnumerable<T> enumerable) {
       var count = GetCountOrDefault(enumerable);
       return new Sequence<T, EnumeratorIterator<T>>(new EnumeratorIterator<T>(enumerable.GetEnumerator()), count);
    }
@@ -50,7 +52,7 @@ public static partial class Sequence {
    ///    then disposes the underlying enumerator.
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static void Iterate<T> (this IEnumerable<T> enumerable, Action<Sequence<T, EnumeratorIterator<T>>> action) {
+   public static void Seq<T> (this IEnumerable<T> enumerable, Action<Sequence<T, EnumeratorIterator<T>>> action) {
       var count = GetCountOrDefault(enumerable);
       using var enumerator = enumerable.GetEnumerator();
       var sequence = new Sequence<T, EnumeratorIterator<T>>(new EnumeratorIterator<T>(enumerator), count);
@@ -63,7 +65,7 @@ public static partial class Sequence {
    ///    then disposes the underlying enumerator.
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static TResult Iterate<T, TResult> (this IEnumerable<T> enumerable, Func<Sequence<T, EnumeratorIterator<T>>, TResult> func) {
+   public static TResult Seq<T, TResult> (this IEnumerable<T> enumerable, Func<Sequence<T, EnumeratorIterator<T>>, TResult> func) {
       var count = GetCountOrDefault(enumerable);
       using var enumerator = enumerable.GetEnumerator();
       var sequence = new Sequence<T, EnumeratorIterator<T>>(new EnumeratorIterator<T>(enumerator), count);

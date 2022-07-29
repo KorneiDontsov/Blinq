@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Blinq;
 
 public static partial class Option {
@@ -7,6 +9,7 @@ public static partial class Option {
    /// </summary>
    /// <returns>The value of the current <see cref="Option{T}" />.</returns>
    /// <exception cref="NoValueException">The current <see cref="Option{T}" /> has not value. </exception>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static T OrFail<T> (this in Option<T> option, string message) {
       if (!option.HasValue) NoValueException.Throw(message);
       return option.ValueOrDefault!;

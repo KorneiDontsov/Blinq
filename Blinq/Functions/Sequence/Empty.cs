@@ -3,9 +3,9 @@ using System.Runtime.CompilerServices;
 namespace Blinq;
 
 public readonly struct EmptyIterator<T>: IIterator<T> {
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulated Accumulate<TAccumulated, TAccumulator> (TAccumulator accumulator, TAccumulated seed)
-   where TAccumulator: IAccumulator<T, TAccumulated> {
+   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
       return seed;
    }
 }

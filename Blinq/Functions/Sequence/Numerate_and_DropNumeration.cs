@@ -6,28 +6,31 @@ public readonly struct NumeratedItem<T> {
    public readonly T Value;
    public readonly int Position;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public NumeratedItem (T value, int position) {
       Value = value;
       Position = position;
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Deconstruct (out T value, out int position) {
       value = Value;
       position = Position;
    }
 }
 
-struct NumerateAccumulator<T, TAccumulated, TNextAccumulator>: IAccumulator<T, (TAccumulated Accumulated, int Position)>
-where TNextAccumulator: IAccumulator<NumeratedItem<T>, TAccumulated> {
-   TNextAccumulator NextAccumulator;
+struct NumerateFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, (TAccumulator Accumulator, int Position)>
+where TInnerFoldFunc: IFoldFunc<NumeratedItem<T>, TAccumulator> {
+   TInnerFoldFunc InnerFoldFunc;
 
-   public NumerateAccumulator (TNextAccumulator nextAccumulator) {
-      NextAccumulator = nextAccumulator;
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public NumerateFoldFunc (TInnerFoldFunc innerFoldFunc) {
+      InnerFoldFunc = innerFoldFunc;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (T item, ref (TAccumulated Accumulated, int Position) state) {
-      return NextAccumulator.Invoke(new NumeratedItem<T>(item, state.Position++), ref state.Accumulated);
+   public bool Invoke (T item, ref (TAccumulator Accumulator, int Position) state) {
+      return InnerFoldFunc.Invoke(new NumeratedItem<T>(item, state.Position++), ref state.Accumulator);
    }
 }
 
@@ -35,44 +38,48 @@ public struct NumerateIterator<T, TIterator>: IIterator<NumeratedItem<T>> where 
    TIterator Iterator;
    int Position;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public NumerateIterator (TIterator iterator) {
       Iterator = iterator;
       Position = 0;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulated Accumulate<TAccumulated, TAccumulator> (TAccumulator accumulator, TAccumulated seed)
-   where TAccumulator: IAccumulator<NumeratedItem<T>, TAccumulated> {
-      (seed, Position) = Iterator.Accumulate(new NumerateAccumulator<T, TAccumulated, TAccumulator>(accumulator), (seed, Position));
+   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func)
+   where TFoldFunc: IFoldFunc<NumeratedItem<T>, TAccumulator> {
+      (seed, Position) = Iterator.Fold((seed, Position), new NumerateFoldFunc<T, TAccumulator, TFoldFunc>(func));
       return seed;
    }
 }
 
-struct DropNumerationAccumulator<T, TAccumulated, TNextAccumulator>: IAccumulator<NumeratedItem<T>, TAccumulated>
-where TNextAccumulator: IAccumulator<T, TAccumulated> {
-   TNextAccumulator NextAccumulator;
+struct DropNumerationFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<NumeratedItem<T>, TAccumulator>
+where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
+   TInnerFoldFunc InnerFoldFunc;
 
-   public DropNumerationAccumulator (TNextAccumulator nextAccumulator) {
-      NextAccumulator = nextAccumulator;
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public DropNumerationFoldFunc (TInnerFoldFunc innerFoldFunc) {
+      InnerFoldFunc = innerFoldFunc;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (NumeratedItem<T> item, ref TAccumulated accumulated) {
-      return NextAccumulator.Invoke(item.Value, ref accumulated);
+   public bool Invoke (NumeratedItem<T> item, ref TAccumulator accumulator) {
+      return InnerFoldFunc.Invoke(item.Value, ref accumulator);
    }
 }
 
 public struct DropNumerationIterator<T, TIterator>: IIterator<T> where TIterator: IIterator<NumeratedItem<T>> {
    TIterator Iterator;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public DropNumerationIterator (TIterator iterator) {
       Iterator = iterator;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulated Accumulate<TAccumulated, TAccumulator> (TAccumulator accumulator, TAccumulated seed)
-   where TAccumulator: IAccumulator<T, TAccumulated> {
-      return Iterator.Accumulate(new DropNumerationAccumulator<T, TAccumulated, TAccumulator>(accumulator), seed);
+   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
+      return Iterator.Fold(seed, new DropNumerationFoldFunc<T, TAccumulator, TFoldFunc>(func));
    }
 }
 

@@ -3,8 +3,8 @@ using System.Linq;
 namespace Blinq.Benchmarks;
 
 [MemoryDiagnoser]
-public class FasterIteratorBenchmarks {
-   static readonly Func<int, bool> Predicate = i => i % 2 == 0;
+public class WhereCountBenchmarks {
+   static readonly Func<int, bool> Predicate = static i => i % 2 == 0;
    int[] Array = null!;
 
    [Params(10, 100, 500)]
@@ -12,14 +12,11 @@ public class FasterIteratorBenchmarks {
 
    [GlobalSetup]
    public void Setup () {
-      Array = new int[N];
-      for (var i = 0; i < N; ++i) {
-         Array[i] = i;
-      }
+      Array = Utils.CreateArrayRange(N);
    }
 
    [Benchmark(Baseline = true)]
-   public int StraightForward_ArrayWhereCount () {
+   public int Loop_Where_Count () {
       var count = 0;
       foreach (var item in Array) {
          if (Predicate(item)) ++count;
@@ -29,17 +26,17 @@ public class FasterIteratorBenchmarks {
    }
 
    [Benchmark]
-   public int Linq_ArrayWhereCount () {
+   public int Linq_Where_Count () {
       return Array.Where(Predicate).Count();
    }
 
    [Benchmark]
-   public int Linq_ArrayCountWithPredicate () {
+   public int Linq_CountWithPredicate () {
       return Array.Count(Predicate);
    }
 
    [Benchmark]
-   public int Blinq_ArrayWhereCount () {
-      return Array.Iterate().Where(Predicate).Count();
+   public int Blinq_Where_Count () {
+      return Array.Seq().Where(Predicate).Count();
    }
 }

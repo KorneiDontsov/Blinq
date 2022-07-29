@@ -2,34 +2,36 @@ using System.Runtime.CompilerServices;
 
 namespace Blinq;
 
-struct FlattenOutAccumulator<TOut, TAccumulated, TNextAccumulator>: IAccumulator<TOut, (TAccumulated Accumulated, bool Interrupted)>
-where TNextAccumulator: IAccumulator<TOut, TAccumulated> {
-   TNextAccumulator NextAccumulator;
+struct FlattenOutFoldFunc<TOut, TAccumulator, TInnerFoldFunc>: IFoldFunc<TOut, (TAccumulator Accumulator, bool Interrupted)>
+where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
+   TInnerFoldFunc InnerFoldFunc;
 
-   public FlattenOutAccumulator (TNextAccumulator nextAccumulator) {
-      NextAccumulator = nextAccumulator;
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public FlattenOutFoldFunc (TInnerFoldFunc innerFoldFunc) {
+      InnerFoldFunc = innerFoldFunc;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (TOut item, ref (TAccumulated Accumulated, bool Interrupted) state) {
-      return state.Interrupted = NextAccumulator.Invoke(item, ref state.Accumulated);
+   public bool Invoke (TOut item, ref (TAccumulator Accumulator, bool Interrupted) state) {
+      return state.Interrupted = InnerFoldFunc.Invoke(item, ref state.Accumulator);
    }
 }
 
-readonly struct FlattenInAccumulator<TOut, TAccumulated, TOutAccumulator, TOutIterator>:
-   IAccumulator<Sequence<TOut, TOutIterator>, (TAccumulated Accumulated, TOutIterator OutIterator, bool Interrupted)>
+readonly struct FlattenInFoldFunc<TOut, TAccumulator, TOutAccumulator, TOutIterator>:
+   IFoldFunc<Sequence<TOut, TOutIterator>, (TAccumulator Accumulator, TOutIterator OutIterator, bool Interrupted)>
 where TOutIterator: IIterator<TOut>
-where TOutAccumulator: IAccumulator<TOut, TAccumulated> {
-   readonly FlattenOutAccumulator<TOut, TAccumulated, TOutAccumulator> OutAccumulator;
+where TOutAccumulator: IFoldFunc<TOut, TAccumulator> {
+   readonly FlattenOutFoldFunc<TOut, TAccumulator, TOutAccumulator> OutFoldFunc;
 
-   public FlattenInAccumulator (FlattenOutAccumulator<TOut, TAccumulated, TOutAccumulator> outAccumulator) {
-      OutAccumulator = outAccumulator;
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public FlattenInFoldFunc (FlattenOutFoldFunc<TOut, TAccumulator, TOutAccumulator> outFoldFunc) {
+      OutFoldFunc = outFoldFunc;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (Sequence<TOut, TOutIterator> item, ref (TAccumulated Accumulated, TOutIterator OutIterator, bool Interrupted) state) {
+   public bool Invoke (Sequence<TOut, TOutIterator> item, ref (TAccumulator Accumulator, TOutIterator OutIterator, bool Interrupted) state) {
       state.OutIterator = item.Iterator;
-      (state.Accumulated, state.Interrupted) = state.OutIterator.Accumulate(OutAccumulator, (state.Accumulated, Interrupted: false));
+      (state.Accumulator, state.Interrupted) = state.OutIterator.Fold((state.Accumulator, Interrupted: false), OutFoldFunc);
       return state.Interrupted;
    }
 }
@@ -41,25 +43,26 @@ where TOutIterator: IIterator<TOut> {
    TOutIterator OutIterator;
    bool Interrupted;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public FlattenIterator (TInIterator inIterator) {
       InIterator = inIterator;
       OutIterator = default!;
       Interrupted = false;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulated Accumulate<TAccumulated, TAccumulator> (TAccumulator accumulator, TAccumulated seed)
-   where TAccumulator: IAccumulator<TOut, TAccumulated> {
-      var outAccumulator = new FlattenOutAccumulator<TOut, TAccumulated, TAccumulator>(accumulator);
+   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TOut, TAccumulator> {
+      var outFoldFunc = new FlattenOutFoldFunc<TOut, TAccumulator, TFoldFunc>(func);
       if (Interrupted) {
-         (seed, Interrupted) = OutIterator.Accumulate(outAccumulator, (seed, Interrupted: false));
+         (seed, Interrupted) = OutIterator.Fold((seed, Interrupted: false), outFoldFunc);
       }
 
       if (!Interrupted) {
          (seed, OutIterator, Interrupted) =
-            InIterator.Accumulate(
-               new FlattenInAccumulator<TOut, TAccumulated, TAccumulator, TOutIterator>(),
-               (seed, default(TOutIterator)!, Interrupted: false)
+            InIterator.Fold(
+               (seed, default(TOutIterator)!, Interrupted: false),
+               new FlattenInFoldFunc<TOut, TAccumulator, TFoldFunc, TOutIterator>(outFoldFunc)
             );
       }
 
