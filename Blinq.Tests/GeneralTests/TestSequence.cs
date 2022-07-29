@@ -4,12 +4,26 @@ using System.Linq;
 namespace Blinq.Tests;
 
 public class TestSequence {
-   static Sequence<int, EnumeratorIterator<int>> Range (int n) {
-      return Enumerable.Range(0, n).Iterate();
+   [Test]
+   public void Empty () {
+      var sequence = Sequence.Empty<object>();
+      var isNotEmpty = sequence.Next().HasValue;
+      Assert.False(isNotEmpty);
    }
 
-   static Sequence<int, EnumeratorIterator<int>> Range (int start, int count) {
-      return Enumerable.Range(start, count).Iterate();
+   [Test]
+   public void FlattenOnEmpty () {
+      var sequence = Sequence.Empty<Sequence<ValueTuple, IIterator<ValueTuple>>>();
+      var actual = sequence.Flatten().AsEnumerable();
+      Assert.IsEmpty(actual);
+   }
+}
+
+public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
+   protected abstract Sequence<int, TIterator> Range (int start, int count);
+
+   Sequence<int, TIterator> Range (int n) {
+      return Range(0, n);
    }
 
    [TestCase(10)] [TestCase(100)] [TestCase(250)]
@@ -73,7 +87,9 @@ public class TestSequence {
    public void Capture (int n) {
       var capture = new object();
       var expected = 0;
-      foreach (var item in Range(n).Capture(capture)) {
+
+      var sequence = Range(n).Capture(capture);
+      while (sequence.Pop() is (true, var item)) {
          Assert.AreEqual(expected, item.Value);
          Assert.AreSame(capture, item.Capture);
          ++expected;
@@ -82,56 +98,73 @@ public class TestSequence {
       Assert.AreEqual(n, expected);
    }
 
-   [Test]
-   public void Empty () {
-      var iterator = Sequence.Empty<object>().Iterator;
-      var isNotEmpty = iterator.MoveNext();
-      Assert.False(isNotEmpty);
+   [TestCase(0)] [TestCase(10)] [TestCase(100)] [TestCase(250)]
+   public void Count (int n) {
+      var expected = n;
+      var actual = Range(n).Count();
+      Assert.AreEqual(expected, actual);
    }
 
    [Test]
-   public void FlattenOnEmpty () {
-      var sequence = Sequence.Empty<Sequence<ValueTuple, IIterator<ValueTuple>>>();
+   public void FlattenOnEmptyItem () {
+      var expected = Enumerable.Empty<int>();
+      var sequence = new[] { Range(0) }.Seq();
       var actual = sequence.Flatten().AsEnumerable();
-      Assert.IsEmpty(actual);
+      Assert.AreEqual(expected, actual);
    }
 
    [Test]
    public void FlattenOnSingleItem () {
-      var item = new object();
-      var sequence = new[] { new[] { item } }.Iterate().Select(nested => nested.Iterate());
-
-      var expected = new[] { item }.AsEnumerable();
+      var expected = new[] { 0 }.AsEnumerable();
+      var sequence = new[] { Range(1) }.Seq();
       var actual = sequence.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
    [Test]
    public void FlattenOnMultipleItems () {
-      var items = new object[] { new(), new(), new(), new(), new(), new() };
-      var sequence = new[] {
-            new[] { items[0] },
-            new[] { items[1], items[2] },
-            new[] { items[3], items[4], items[5] },
-         }
-         .Iterate().Select(nested => nested.Iterate());
-
-      var expected = items.AsEnumerable();
+      var expected = new[] { 0, 1, 0, 1, 2, 0, 1, 2, 3, 4 }.AsEnumerable();
+      var sequence = new[] { Range(2), Range(3), Range(5) }.Seq();
       var actual = sequence.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
    [Test]
-   public void FlattenOnBoxedItems () {
-      var sequence = new[] {
-            Sequence.Empty<int>().Box(),
-            new[] { 1, 2 }.Iterate().Box(),
-            Enumerable.Range(3, 3).Iterate().Box(),
-         }
-         .Iterate();
+   public void FlattenOnMultipleItemsWithSingleFold () {
+      var expected = 14;
+      var sequence = new[] { Range(2), Range(3), Range(5) }.Seq();
+      var actual = sequence.Flatten().Sum();
+      Assert.AreEqual(expected, actual);
+   }
 
-      var expected = new[] { 1, 2, 3, 4, 5 }.AsEnumerable();
+   [Test]
+   public void FlattenOnBoxedItems () {
+      var expected = new[] { 0, 1, 0, 1, 2, 0, 1, 2, 3, 4 }.AsEnumerable();
+      var sequence = new[] { Range(2).Box(), Range(3).Box(), Range(5).Box() }.Seq();
       var actual = sequence.Flatten().AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
+   [TestCase(0)] [TestCase(10)] [TestCase(100)]
+   public void ForEach (int n) {
+      var expected = Enumerable.Range(0, n);
+
+      var actual = new List<int>();
+      Range(n).ForEach(actual.Add);
+
+      Assert.AreEqual(expected, actual);
+   }
+
+   [TestCase(0)] [TestCase(10)] [TestCase(100)]
+   public void Inspect (int n) {
+      var expected = Enumerable.Range(0, n);
+
+      var actual = new List<int>();
+      var sequence = Range(n).Inspect(actual.Add);
+      Assert.IsEmpty(actual);
+
+      while (sequence.Pop().HasValue) { }
+
       Assert.AreEqual(expected, actual);
    }
 
@@ -142,7 +175,7 @@ public class TestSequence {
 
       var sequence = Range(offset, n).Numerate();
 
-      foreach (var (actualValue, actualPosition) in sequence) {
+      while (sequence.Pop() is (true, var (actualValue, actualPosition))) {
          Assert.AreEqual(expectedValue, actualValue);
          Assert.AreEqual(expectedPosition, actualPosition);
 
@@ -156,7 +189,7 @@ public class TestSequence {
    [TestCase(0)] [TestCase(10)] [TestCase(100)] [TestCase(250)]
    public void DropNumeration (int n) {
       var expected = Enumerable.Range(0, n);
-      var actual = expected.Iterate().Numerate().DropNumeration().AsEnumerable();
+      var actual = Range(n).Numerate().DropNumeration().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
@@ -164,6 +197,13 @@ public class TestSequence {
    public void Select (int n, int offset) {
       var expected = Enumerable.Range(offset, n);
       var actual = Range(n).Select(i => i + offset).AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
+   [TestCase(0)] [TestCase(10)] [TestCase(100)] [TestCase(250)]
+   public void Sum (int n) {
+      var expected = n / 2 * (n - 1);
+      var actual = Range(n).Sum();
       Assert.AreEqual(expected, actual);
    }
 
@@ -175,6 +215,13 @@ public class TestSequence {
 
       var expected = Enumerable.Range(0, n).Where(Predicate);
       var actual = Range(n).Where(Predicate).AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
+   [TestCase(0)] [TestCase(10)] [TestCase(100)] [TestCase(250)]
+   public void WhereCount (int n) {
+      var expected = n / 2;
+      var actual = Range(n).Where(i => i % 2 == 0).Count();
       Assert.AreEqual(expected, actual);
    }
 }

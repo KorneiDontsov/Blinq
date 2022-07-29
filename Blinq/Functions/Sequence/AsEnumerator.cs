@@ -1,37 +1,37 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Blinq;
 
 sealed class IteratorEnumerator<T, TIterator>: IEnumerator<T> where TIterator: IIterator<T> {
    TIterator Iterator;
-   public T Current { get; private set; }
+   T Item = default!;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public IteratorEnumerator (TIterator iterator) {
       Iterator = iterator;
-      Current = default!;
    }
+
+   public T Current => Item;
 
    object? IEnumerator.Current => Current;
 
    public bool MoveNext () {
-      if (Iterator.MoveNext()) {
-         Current = Iterator.Current;
-         return true;
-      } else {
-         return false;
-      }
+      Iterator.Fold(Option<T>.None, new NextFoldFunc<T>()).Deconstruct(out var hasValue, out Item);
+      return hasValue;
    }
 
    public void Dispose () { }
 
-   void IEnumerator.Reset () {
+   public void Reset () {
       throw new NotSupportedException();
    }
 }
 
 public static partial class Sequence {
    /// <summary>Returns the iterator as <see cref="System.Collections.Generic.IEnumerator{T}" />.</summary>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static IEnumerator<T> AsEnumerator<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
       return new IteratorEnumerator<T, TIterator>(sequence.Iterator);
    }

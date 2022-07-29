@@ -4,6 +4,7 @@ namespace Blinq;
 
 public static partial class Option {
    /// <summary>Creates an <see cref="Option{T}" /> with the specified <paramref name="value" />.</summary>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Option<T> Value<T> (T value) {
       return new Option<T>(value);
    }

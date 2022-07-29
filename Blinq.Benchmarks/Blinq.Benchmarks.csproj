@@ -15,4 +15,8 @@
     <ItemGroup>
         <Using Include="BenchmarkDotNet.Attributes" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="BenchmarkDotNet.Artifacts" />
+    </ItemGroup>
 </Project>
