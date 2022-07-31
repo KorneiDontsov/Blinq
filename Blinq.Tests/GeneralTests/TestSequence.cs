@@ -7,7 +7,7 @@ public class TestSequence {
    [Test]
    public void Empty () {
       var expected = Enumerable.Empty<object>();
-      var actual = Sequence.Empty<object>();
+      var actual = Sequence.Empty<object>().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
