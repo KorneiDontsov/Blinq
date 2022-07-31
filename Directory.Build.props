@@ -7,5 +7,6 @@
 
     <ItemGroup>
         <Using Include="System" />
+        <Using Include="System.Runtime.CompilerServices" />
     </ItemGroup>
 </Project>

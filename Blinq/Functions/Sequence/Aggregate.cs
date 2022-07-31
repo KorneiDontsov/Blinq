@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Blinq;
 
 readonly struct AggregateFoldFunc<T, TAccumulator>: IFoldFunc<T, TAccumulator> {

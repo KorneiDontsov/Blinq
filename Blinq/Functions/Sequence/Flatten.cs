@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Blinq;
 
 struct FlattenOutFoldFunc<TOut, TAccumulator, TInnerFoldFunc>: IFoldFunc<TOut, (TAccumulator Accumulator, bool Interrupted)>

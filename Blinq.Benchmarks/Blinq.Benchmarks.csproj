@@ -17,6 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="BenchmarkDotNet.Artifacts" />
+        <Folder Include="BenchmarkDotNet.Artifacts" />
     </ItemGroup>
 </Project>

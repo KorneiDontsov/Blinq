@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Blinq;
 
 public readonly struct EmptyIterator<T>: IIterator<T> {

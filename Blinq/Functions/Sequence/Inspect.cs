@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Blinq;
 
 struct InspectFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, TAccumulator> where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {

@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace ResearchBenchmarks.FasterOption;
 
 sealed class NoValueException: Exception {

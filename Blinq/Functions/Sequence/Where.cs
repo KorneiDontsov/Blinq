@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Blinq;
 
 struct WhereFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, TAccumulator> where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
@@ -38,7 +36,7 @@ public struct WhereIterator<T, TIterator>: IIterator<T> where TIterator: IIterat
 public static partial class Sequence {
    /// <summary>Filters a sequence of values based on a predicate.</summary>
    /// <param name="predicate">A function to test each element for a condition.</param>
-   /// <returns>A sequence that contains elements from the input sequence that satisfy the condition.</returns>
+   /// <returns>A sequence that contains elements from the input <paramref name="sequence" /> that satisfy the condition.</returns>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, WhereIterator<T, TIterator>> Where<T, TIterator> (this in Sequence<T, TIterator> sequence, Func<T, bool> predicate)
    where TIterator: IIterator<T> {

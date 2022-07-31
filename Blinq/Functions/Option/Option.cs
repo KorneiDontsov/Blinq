@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Blinq;
 
 public sealed class NoValueException: Exception {
@@ -32,7 +30,7 @@ public readonly struct Option<T> {
    }
 
    /// <summary>An <see cref="Option{T}" /> without value.</summary>
-   public static Option<T> None  { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default; }
+   public static Option<T> None { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default; }
 
    /// <summary>Creates an <see cref="Option{T}" /> with the specified <paramref name="value" />.</summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

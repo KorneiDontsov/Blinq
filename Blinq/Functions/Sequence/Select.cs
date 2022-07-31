@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Blinq;
 
 struct SelectFoldFunc<TIn, TAccumulator, TOut, TInnerFoldFunc>: IFoldFunc<TIn, TAccumulator>

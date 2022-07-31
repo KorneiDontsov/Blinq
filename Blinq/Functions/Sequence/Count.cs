@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Blinq;
 
 readonly struct CountFoldFunc<T>: IFoldFunc<T, int> {
