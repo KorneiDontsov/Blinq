@@ -63,4 +63,28 @@ public static partial class Sequence {
    ) where TIterator: IIterator<T> {
       return WhereEqual(sequence, value, Equaler.Default<T>());
    }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static bool AllEqual<T, TIterator, TEqualer> (this in Sequence<T, TIterator> sequence, T value, TEqualer equaler)
+   where TIterator: IIterator<T>
+   where TEqualer: IEqualityComparer<T> {
+      return sequence.Iterator.Fold(true, new AllFoldFunc<T, EqualItemPredicate<T, TEqualer>>(new EqualItemPredicate<T, TEqualer>(value, equaler)));
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static bool AllEqual<T, TIterator, TEqualer> (
+      this in Sequence<T, TIterator> sequence,
+      T value,
+      Func<EqualerProvider<T>, TEqualer> provideEqualer
+   )
+   where TIterator: IIterator<T>
+   where TEqualer: IEqualityComparer<T> {
+      return sequence.AllEqual(value, provideEqualer.Invoke());
+   }
+
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static bool AllEqual<T, TIterator> (this in Sequence<T, TIterator> sequence, T value) where TIterator: IIterator<T> {
+      return sequence.AllEqual(value, Equaler.Default<T>());
+   }
 }
