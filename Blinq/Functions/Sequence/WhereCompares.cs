@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Blinq;
 
-public readonly struct WhereComparesPredicate<T, TCompareCondition, TComparer>: IWherePredicate<T>
+public readonly struct ComparesItemPredicate<T, TCompareCondition, TComparer>: IItemPredicate<T>
 where TCompareCondition: ICompareCondition
 where TComparer: IComparer<T> {
    readonly T Value;
@@ -10,7 +10,7 @@ where TComparer: IComparer<T> {
    readonly TComparer Comparer;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public WhereComparesPredicate (T value, TCompareCondition compareCondition, TComparer comparer) {
+   public ComparesItemPredicate (T value, TCompareCondition compareCondition, TComparer comparer) {
       Value = value;
       CompareCondition = compareCondition;
       Comparer = comparer;
@@ -24,7 +24,7 @@ where TComparer: IComparer<T> {
 
 public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, WhereComparesPredicate<T, TCompareCondition, TComparer>, TIterator>>
+   public static Sequence<T, WhereIterator<T, ComparesItemPredicate<T, TCompareCondition, TComparer>, TIterator>>
       WhereCompares<T, TIterator, TCompareCondition, TComparer> (
          this Sequence<T, TIterator> sequence,
          T value,
@@ -34,14 +34,14 @@ public static partial class Sequence {
    where TIterator: IIterator<T>
    where TCompareCondition: ICompareCondition
    where TComparer: IComparer<T> {
-      return new WhereIterator<T, WhereComparesPredicate<T, TCompareCondition, TComparer>, TIterator>(
+      return new WhereIterator<T, ComparesItemPredicate<T, TCompareCondition, TComparer>, TIterator>(
          sequence.Iterator,
-         new WhereComparesPredicate<T, TCompareCondition, TComparer>(value, compareCondition, comparer)
+         new ComparesItemPredicate<T, TCompareCondition, TComparer>(value, compareCondition, comparer)
       );
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, WhereComparesPredicate<T, TCompareCondition, TComparer>, TIterator>>
+   public static Sequence<T, WhereIterator<T, ComparesItemPredicate<T, TCompareCondition, TComparer>, TIterator>>
       WhereCompares<T, TIterator, TCompareCondition, TComparer> (
          this Sequence<T, TIterator> sequence,
          T value,
@@ -55,7 +55,7 @@ public static partial class Sequence {
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, WhereComparesPredicate<T, TCompareCondition, DefaultComparer<T>>, TIterator>>
+   public static Sequence<T, WhereIterator<T, ComparesItemPredicate<T, TCompareCondition, DefaultComparer<T>>, TIterator>>
       WhereCompares<T, TIterator, TCompareCondition> (
          this Sequence<T, TIterator> sequence,
          T value,

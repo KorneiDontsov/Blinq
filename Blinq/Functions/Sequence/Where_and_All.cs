@@ -3,15 +3,15 @@ using System.Diagnostics.CodeAnalysis;
 namespace Blinq;
 
 [SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]
-public interface IWherePredicate<T> {
+public interface IItemPredicate<T> {
    bool Invoke (T item);
 }
 
-public readonly struct WherePredicate<T>: IWherePredicate<T> {
+public readonly struct FuncItemPredicate<T>: IItemPredicate<T> {
    readonly Func<T, bool> Func;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public WherePredicate (Func<T, bool> func) {
+   public FuncItemPredicate (Func<T, bool> func) {
       Func = func;
    }
 
@@ -22,7 +22,7 @@ public readonly struct WherePredicate<T>: IWherePredicate<T> {
 }
 
 struct WhereFoldFunc<T, TAccumulator, TPredicate, TInnerFoldFunc>: IFoldFunc<T, TAccumulator>
-where TPredicate: IWherePredicate<T>
+where TPredicate: IItemPredicate<T>
 where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
    TPredicate Predicate;
    TInnerFoldFunc InnerFoldFunc;
@@ -39,8 +39,27 @@ where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
    }
 }
 
+struct AllFoldFunc<T, TPredicate>: IFoldFunc<T, bool> where TPredicate: IItemPredicate<T> {
+   TPredicate Predicate;
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public AllFoldFunc (TPredicate predicate) {
+      Predicate = predicate;
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Invoke (T item, ref bool accumulator) {
+      if (Predicate.Invoke(item)) {
+         return false;
+      } else {
+         accumulator = false;
+         return true;
+      }
+   }
+}
+
 public struct WhereIterator<T, TPredicate, TIterator>: IIterator<T>
-where TPredicate: IWherePredicate<T>
+where TPredicate: IItemPredicate<T>
 where TIterator: IIterator<T> {
    TIterator Iterator;
    readonly TPredicate Predicate;
@@ -63,11 +82,16 @@ public static partial class Sequence {
    /// <param name="predicate">A function to test each element for a condition.</param>
    /// <returns>A sequence that contains elements from the input <paramref name="sequence" /> that satisfy the condition.</returns>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, WherePredicate<T>, TIterator>> Where<T, TIterator> (
+   public static Sequence<T, WhereIterator<T, FuncItemPredicate<T>, TIterator>> Where<T, TIterator> (
       this in Sequence<T, TIterator> sequence,
       Func<T, bool> predicate
    )
    where TIterator: IIterator<T> {
-      return new WhereIterator<T, WherePredicate<T>, TIterator>(sequence.Iterator, new WherePredicate<T>(predicate));
+      return new WhereIterator<T, FuncItemPredicate<T>, TIterator>(sequence.Iterator, new FuncItemPredicate<T>(predicate));
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static bool All<T, TIterator> (this in Sequence<T, TIterator> sequence, Func<T, bool> predicate) where TIterator: IIterator<T> {
+      return sequence.Iterator.Fold(true, new AllFoldFunc<T, FuncItemPredicate<T>>(new FuncItemPredicate<T>(predicate)));
    }
 }
