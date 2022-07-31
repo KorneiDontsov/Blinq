@@ -224,4 +224,16 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
       var actual = Range(n).Where(i => i % 2 == 0).Count();
       Assert.AreEqual(expected, actual);
    }
+
+   public void WhereEqualToSingleResult () {
+      var expected = new[] { 7 };
+      var actual = Range(10).WhereEqual(7).AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
+   public void WhereEqualToMultipleResults () {
+      var expected = new[] { 0, 2, 4, 6, 8 };
+      var actual = Range(10).WhereEqual(0, e => e.ByKey(i => i % 2)).AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
 }
