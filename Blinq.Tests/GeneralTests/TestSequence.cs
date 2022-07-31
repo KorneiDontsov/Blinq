@@ -225,18 +225,28 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
       Assert.AreEqual(expected, actual);
    }
 
+   [Test]
+   public void WhereCompares () {
+      var expected = new[] { 0, 1, 2, 3, 4 };
+      var actual = Range(10).WhereCompares(5, CompareCondition.Less).AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
+   [Test]
    public void WhereEqualToSingleResult () {
       var expected = new[] { 7 };
       var actual = Range(10).WhereEqual(7).AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
+   [Test]
    public void WhereEqualToMultipleResults () {
       var expected = new[] { 0, 2, 4, 6, 8 };
       var actual = Range(10).WhereEqual(0, e => e.ByKey(i => i % 2)).AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
+   [Test]
    public void WhereNotEqual () {
       var expected = new[] { 1, 2, 3, 4 };
       var actual = Range(5).WhereNotEqual(0).AsEnumerable();
