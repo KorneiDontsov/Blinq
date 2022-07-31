@@ -23,7 +23,7 @@ public static partial class Sequence {
    /// <param name="equaler">An equality comparer to compare values.</param>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, WhereIterator<T, NotEqualItemPredicate<T, TEqualer>, TIterator>> WhereNotEqual<T, TIterator, TEqualer> (
-      this Sequence<T, TIterator> sequence,
+      this in Sequence<T, TIterator> sequence,
       T value,
       TEqualer equaler
    )
@@ -39,7 +39,7 @@ public static partial class Sequence {
    /// <param name="provideEqualer">A function that returns an equality comparer to compare values.</param>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, WhereIterator<T, NotEqualItemPredicate<T, TEqualer>, TIterator>> WhereNotEqual<T, TIterator, TEqualer> (
-      this Sequence<T, TIterator> sequence,
+      this in Sequence<T, TIterator> sequence,
       T value,
       Func<EqualerProvider<T>, TEqualer> provideEqualer
    )
@@ -58,7 +58,7 @@ public static partial class Sequence {
    /// </returns>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, WhereIterator<T, NotEqualItemPredicate<T, DefaultEqualer<T>>, TIterator>> WhereNotEqual<T, TIterator> (
-      this Sequence<T, TIterator> sequence,
+      this in Sequence<T, TIterator> sequence,
       T value
    ) where TIterator: IIterator<T> {
       return WhereNotEqual(sequence, value, Equaler.Default<T>());

@@ -26,7 +26,7 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, WhereIterator<T, ComparesItemPredicate<T, TCompareCondition, TComparer>, TIterator>>
       WhereCompares<T, TIterator, TCompareCondition, TComparer> (
-         this Sequence<T, TIterator> sequence,
+         this in Sequence<T, TIterator> sequence,
          T value,
          TCompareCondition compareCondition,
          TComparer comparer
@@ -43,7 +43,7 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, WhereIterator<T, ComparesItemPredicate<T, TCompareCondition, TComparer>, TIterator>>
       WhereCompares<T, TIterator, TCompareCondition, TComparer> (
-         this Sequence<T, TIterator> sequence,
+         this in Sequence<T, TIterator> sequence,
          T value,
          TCompareCondition compareCondition,
          Func<ComparerProvider<T>, TComparer> provideComparer
@@ -57,7 +57,7 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, WhereIterator<T, ComparesItemPredicate<T, TCompareCondition, DefaultComparer<T>>, TIterator>>
       WhereCompares<T, TIterator, TCompareCondition> (
-         this Sequence<T, TIterator> sequence,
+         this in Sequence<T, TIterator> sequence,
          T value,
          TCompareCondition compareCondition
       )

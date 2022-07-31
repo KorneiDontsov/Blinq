@@ -18,7 +18,7 @@ readonly struct ForEachFoldFunc<T>: IFoldFunc<T, ValueTuple> {
 public static partial class Sequence {
    /// <summary>Executes an action to each element of a sequence.</summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static void ForEach<T, TIterator> (this Sequence<T, TIterator> sequence, Action<T> action) where TIterator: IIterator<T> {
+   public static void ForEach<T, TIterator> (this in Sequence<T, TIterator> sequence, Action<T> action) where TIterator: IIterator<T> {
       sequence.Iterator.Fold(default(ValueTuple), new ForEachFoldFunc<T>(action));
    }
 }
