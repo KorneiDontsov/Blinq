@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Blinq;
 
-readonly struct NextFoldFunc<T>: IFoldFunc<T, Option<T>> {
+readonly struct PopFoldFunc<T>: IFoldFunc<T, Option<T>> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    [SuppressMessage("ReSharper", "RedundantAssignment")]
    public bool Invoke (T item, ref Option<T> accumulator) {
@@ -13,16 +13,11 @@ readonly struct NextFoldFunc<T>: IFoldFunc<T, Option<T>> {
 
 public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Option<T> Next<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
-      return sequence.Iterator.Fold(Option<T>.None, new NextFoldFunc<T>());
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Option<T> Pop<T, TIterator> (this ref Sequence<T, TIterator> sequence)
    where TIterator: IIterator<T> {
       var iterator = sequence.Iterator;
 
-      var next = iterator.Fold(Option<T>.None, new NextFoldFunc<T>());
+      var next = iterator.Fold(Option<T>.None, new PopFoldFunc<T>());
 
       if (next.HasValue) {
          var newCount = sequence.Count switch {

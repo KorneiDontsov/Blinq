@@ -17,7 +17,7 @@ sealed class IteratorEnumerator<T, TIterator>: IEnumerator<T> where TIterator: I
    object? IEnumerator.Current => Current;
 
    public bool MoveNext () {
-      Iterator.Fold(Option<T>.None, new NextFoldFunc<T>()).Deconstruct(out var hasValue, out Item);
+      Iterator.Fold(Option<T>.None, new PopFoldFunc<T>()).Deconstruct(out var hasValue, out Item);
       return hasValue;
    }
 

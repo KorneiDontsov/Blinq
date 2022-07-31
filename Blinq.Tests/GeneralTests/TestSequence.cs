@@ -6,9 +6,9 @@ namespace Blinq.Tests;
 public class TestSequence {
    [Test]
    public void Empty () {
-      var sequence = Sequence.Empty<object>();
-      var isNotEmpty = sequence.Next().HasValue;
-      Assert.False(isNotEmpty);
+      var expected = Enumerable.Empty<object>();
+      var actual = Sequence.Empty<object>();
+      Assert.AreEqual(expected, actual);
    }
 
    [Test]
