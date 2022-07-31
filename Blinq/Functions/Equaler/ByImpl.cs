@@ -5,7 +5,10 @@ namespace Blinq;
 public readonly struct ByImplEqualer<T>: IEqualityComparer<T> where T: IEquatable<T> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Equals (T? x, T? y) {
-      return x?.Equals(y!) ?? y?.Equals(x!) ?? false;
+      return x switch {
+         null => y is null,
+         not null => y is not null && x.Equals(y),
+      };
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
