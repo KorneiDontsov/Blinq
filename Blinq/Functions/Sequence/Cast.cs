@@ -96,7 +96,7 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<TTo, CastUpIterator<TTo, T, TIterator>> Cast<T, TIterator, TTo> (
       this in Sequence<T, TIterator> sequence,
-      Expression<CastSyntax<T, TTo, CastType.Up>> syntax
+      CastSyntax<T, TTo, CastType.Up> syntax
    )
    where T: TTo
    where TIterator: IIterator<T> {
@@ -109,7 +109,7 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<TTo, CastDownIterator<TTo, T, TIterator>> Cast<T, TIterator, TTo> (
       this in Sequence<T, TIterator> sequence,
-      Expression<CastSyntax<T, TTo, CastType.Down>> syntax
+      CastSyntax<T, TTo, CastType.Down> syntax
    )
    where TIterator: IIterator<T>
    where TTo: T {
