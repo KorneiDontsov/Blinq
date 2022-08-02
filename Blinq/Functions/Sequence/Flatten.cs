@@ -1,28 +1,13 @@
 namespace Blinq;
 
-struct FlattenOutFoldFunc<TOut, TAccumulator, TInnerFoldFunc>: IFoldFunc<TOut, (TAccumulator Accumulator, bool Interrupted)>
-where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
-   TInnerFoldFunc InnerFoldFunc;
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public FlattenOutFoldFunc (TInnerFoldFunc innerFoldFunc) {
-      InnerFoldFunc = innerFoldFunc;
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (TOut item, ref (TAccumulator Accumulator, bool Interrupted) state) {
-      return state.Interrupted = InnerFoldFunc.Invoke(item, ref state.Accumulator);
-   }
-}
-
 readonly struct FlattenInFoldFunc<TOut, TAccumulator, TOutAccumulator, TOutIterator>:
    IFoldFunc<Sequence<TOut, TOutIterator>, (TAccumulator Accumulator, TOutIterator OutIterator, bool Interrupted)>
 where TOutIterator: IIterator<TOut>
 where TOutAccumulator: IFoldFunc<TOut, TAccumulator> {
-   readonly FlattenOutFoldFunc<TOut, TAccumulator, TOutAccumulator> OutFoldFunc;
+   readonly InterruptingFoldFunc<TOut, TAccumulator, TOutAccumulator> OutFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public FlattenInFoldFunc (FlattenOutFoldFunc<TOut, TAccumulator, TOutAccumulator> outFoldFunc) {
+   public FlattenInFoldFunc (InterruptingFoldFunc<TOut, TAccumulator, TOutAccumulator> outFoldFunc) {
       OutFoldFunc = outFoldFunc;
    }
 
@@ -51,7 +36,7 @@ where TOutIterator: IIterator<TOut> {
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TOut, TAccumulator> {
-      var outFoldFunc = new FlattenOutFoldFunc<TOut, TAccumulator, TFoldFunc>(func);
+      var outFoldFunc = new InterruptingFoldFunc<TOut, TAccumulator, TFoldFunc>(func);
       if (Interrupted) {
          (seed, Interrupted) = OutIterator.Fold((seed, Interrupted: false), outFoldFunc);
       }

@@ -75,6 +75,20 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
       Assert.AreSame(expected, actual);
    }
 
+   [Test]
+   public void AppendOnEmpty () {
+      var expected = new[] { 1 }.AsEnumerable();
+      var actual = Range(0).Append(1).AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
+   [Test]
+   public void Append () {
+      var expected = new[] { 0, 1, 2, 3, 4, 100 }.AsEnumerable();
+      var actual = Range(5).Append(100).AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
    [TestCase(10)] [TestCase(100)] [TestCase(250)]
    public void AsEnumerable (int n) {
       var expected = Enumerable.Range(0, n);
@@ -190,6 +204,20 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
    public void DropNumeration (int n) {
       var expected = Enumerable.Range(0, n);
       var actual = Range(n).Numerate().DropNumeration().AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
+   [Test]
+   public void PrependOnEmpty () {
+      var expected = new[] { 1 }.AsEnumerable();
+      var actual = Range(0).Prepend(1).AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
+   [Test]
+   public void Prepend () {
+      var expected = new[] { 100, 0, 1, 2, 3, 4 }.AsEnumerable();
+      var actual = Range(5).Prepend(100).AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
