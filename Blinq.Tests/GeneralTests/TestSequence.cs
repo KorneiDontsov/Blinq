@@ -287,17 +287,19 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
       var actual = Range(n).Concat(Range(n)).AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
-   
-   [TestCase(10)] [TestCase(100)] [TestCase(250)]
-   public void ConcatCount (int n) {
-      var actual1 = Range(n);
-      var actual2 = Range(n);
-      var actual = Range(n).Concat(Range(n));
+
+   [TestCase(10, 17)] [TestCase(100, 177)] [TestCase(250, 227)]
+   public void ConcatCount (int n1, int n2) {
+      var actual1 = Range(n1);
+      var actual2 = Range(n2);
+      var actual = Range(n1).Concat(Range(n2));
       if (actual1.Count.HasValue && actual2.Count.HasValue) {
-         Assert.AreEqual(Option.Value(2 * n), actual.Count);
+         Assert.True(actual.Count.HasValue);
+         Assert.AreEqual(n1 + n2, actual.Count.Value());
       } else {
-         Assert.AreEqual(Option<int>.None, actual.Count);
+         Assert.False(actual.Count.HasValue);
       }
-      Assert.AreEqual(2 * n, actual.Count());
+
+      Assert.AreEqual(n1 + n2, actual.Count());
    }
 }
