@@ -280,4 +280,26 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
       var actual = Range(5).WhereNotEqual(0).AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
+
+   [TestCase(10)] [TestCase(100)] [TestCase(250)]
+   public void ConcatValues (int n) {
+      var expected = Enumerable.Range(0, n).Concat(Enumerable.Range(0, n));
+      var actual = Range(n).Concat(Range(n)).AsEnumerable();
+      Assert.AreEqual(expected, actual);
+   }
+
+   [TestCase(10, 17)] [TestCase(100, 177)] [TestCase(250, 227)]
+   public void ConcatCount (int n1, int n2) {
+      var actual1 = Range(n1);
+      var actual2 = Range(n2);
+      var actual = Range(n1).Concat(Range(n2));
+      if (actual1.Count.HasValue && actual2.Count.HasValue) {
+         Assert.True(actual.Count.HasValue);
+         Assert.AreEqual(n1 + n2, actual.Count.Value());
+      } else {
+         Assert.False(actual.Count.HasValue);
+      }
+
+      Assert.AreEqual(n1 + n2, actual.Count());
+   }
 }
