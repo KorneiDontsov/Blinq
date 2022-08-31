@@ -2,22 +2,6 @@ using System.Collections.Generic;
 
 namespace Blinq;
 
-public readonly struct NotEqualItemPredicate<T, TEqualer>: IItemPredicate<T> where TEqualer: IEqualityComparer<T> {
-   readonly T Value;
-   readonly TEqualer Equaler;
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public NotEqualItemPredicate (T value, TEqualer equaler) {
-      Value = value;
-      Equaler = equaler;
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (T item) {
-      return !Equaler.Equals(Value, item);
-   }
-}
-
 public static partial class Sequence {
    /// <inheritdoc cref="WhereEqual{T,TIterator}(Sequence{T,TIterator},T)" />
    /// <param name="equaler">An equality comparer to compare values.</param>
@@ -29,10 +13,7 @@ public static partial class Sequence {
    )
    where TIterator: IIterator<T>
    where TEqualer: IEqualityComparer<T> {
-      return new WhereIterator<T, NotEqualItemPredicate<T, TEqualer>, TIterator>(
-         sequence.Iterator,
-         new NotEqualItemPredicate<T, TEqualer>(value, equaler)
-      );
+      return sequence.Where(new NotEqualItemPredicate<T, TEqualer>(value, equaler));
    }
 
    /// <inheritdoc cref="WhereEqual{T,TIterator}(Sequence{T,TIterator},T)" />
@@ -62,32 +43,5 @@ public static partial class Sequence {
       T value
    ) where TIterator: IIterator<T> {
       return WhereNotEqual(sequence, value, Equaler.Default<T>());
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static bool AllNotEqual<T, TIterator, TEqualer> (this in Sequence<T, TIterator> sequence, T value, TEqualer equaler)
-   where TIterator: IIterator<T>
-   where TEqualer: IEqualityComparer<T> {
-      return sequence.Iterator.Fold(
-         true,
-         new AllFoldFunc<T, NotEqualItemPredicate<T, TEqualer>>(new NotEqualItemPredicate<T, TEqualer>(value, equaler))
-      );
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static bool AllNotEqual<T, TIterator, TEqualer> (
-      this in Sequence<T, TIterator> sequence,
-      T value,
-      Func<EqualerProvider<T>, TEqualer> provideEqualer
-   )
-   where TIterator: IIterator<T>
-   where TEqualer: IEqualityComparer<T> {
-      return sequence.AllNotEqual(value, provideEqualer.Invoke());
-   }
-
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static bool AllNotEqual<T, TIterator> (this in Sequence<T, TIterator> sequence, T value) where TIterator: IIterator<T> {
-      return sequence.AllNotEqual(value, Equaler.Default<T>());
    }
 }

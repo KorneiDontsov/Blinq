@@ -1,25 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
-
-[SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]
-public interface IItemPredicate<T> {
-   bool Invoke (T item);
-}
-
-public readonly struct FuncItemPredicate<T>: IItemPredicate<T> {
-   readonly Func<T, bool> Func;
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public FuncItemPredicate (Func<T, bool> func) {
-      Func = func;
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (T item) {
-      return Func(item);
-   }
-}
 
 struct WhereFoldFunc<T, TAccumulator, TPredicate, TInnerFoldFunc>: IFoldFunc<T, TAccumulator>
 where TPredicate: IItemPredicate<T>
@@ -36,25 +15,6 @@ where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref TAccumulator accumulator) {
       return Predicate.Invoke(item) && InnerFoldFunc.Invoke(item, ref accumulator);
-   }
-}
-
-struct AllFoldFunc<T, TPredicate>: IFoldFunc<T, bool> where TPredicate: IItemPredicate<T> {
-   TPredicate Predicate;
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public AllFoldFunc (TPredicate predicate) {
-      Predicate = predicate;
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (T item, ref bool accumulator) {
-      if (Predicate.Invoke(item)) {
-         return false;
-      } else {
-         accumulator = false;
-         return true;
-      }
    }
 }
 
@@ -78,6 +38,16 @@ where TIterator: IIterator<T> {
 }
 
 public static partial class Sequence {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static Sequence<T, WhereIterator<T, TPredicate, TIterator>> Where<T, TIterator, TPredicate> (
+      this in Sequence<T, TIterator> sequence,
+      TPredicate predicate
+   )
+   where TIterator: IIterator<T>
+   where TPredicate: IItemPredicate<T> {
+      return new WhereIterator<T, TPredicate, TIterator>(sequence.Iterator, predicate);
+   }
+
    /// <summary>Filters a sequence of values based on a predicate.</summary>
    /// <param name="predicate">A function to test each element for a condition.</param>
    /// <returns>A sequence that contains elements from the input <paramref name="sequence" /> that satisfy the condition.</returns>
@@ -87,11 +57,6 @@ public static partial class Sequence {
       Func<T, bool> predicate
    )
    where TIterator: IIterator<T> {
-      return new WhereIterator<T, FuncItemPredicate<T>, TIterator>(sequence.Iterator, new FuncItemPredicate<T>(predicate));
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static bool All<T, TIterator> (this in Sequence<T, TIterator> sequence, Func<T, bool> predicate) where TIterator: IIterator<T> {
-      return sequence.Iterator.Fold(true, new AllFoldFunc<T, FuncItemPredicate<T>>(new FuncItemPredicate<T>(predicate)));
+      return sequence.Where(new FuncItemPredicate<T>(predicate));
    }
 }
