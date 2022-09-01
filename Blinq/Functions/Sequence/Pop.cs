@@ -11,13 +11,20 @@ readonly struct PopFoldFunc<T>: IFoldFunc<T, Option<T>> {
    }
 }
 
+static partial class Sequence<T> {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static Option<T> Pop<TIterator> (ref TIterator iterator) where TIterator: IIterator<T> {
+      return iterator.Fold(Option<T>.None, new PopFoldFunc<T>());
+   }
+}
+
 public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Option<T> Pop<T, TIterator> (this ref Sequence<T, TIterator> sequence)
    where TIterator: IIterator<T> {
       var iterator = sequence.Iterator;
 
-      var next = iterator.Fold(Option<T>.None, new PopFoldFunc<T>());
+      var next = Sequence<T>.Pop(ref iterator);
 
       if (next.HasValue) {
          var newCount = sequence.Count switch {

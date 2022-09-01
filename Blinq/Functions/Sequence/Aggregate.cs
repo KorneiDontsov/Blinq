@@ -39,7 +39,7 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Option<T> Aggregate<T, TIterator> (this in Sequence<T, TIterator> sequence, Func<T, T, T> func) where TIterator: IIterator<T> {
       var iterator = sequence.Iterator;
-      return iterator.Fold(Option<T>.None, new PopFoldFunc<T>()) switch {
+      return Sequence<T>.Pop(ref iterator) switch {
          (true, var first) => Option.Value(iterator.Fold(first, new AggregateFoldFunc<T, T>(func))),
          _ => Option.None,
       };
