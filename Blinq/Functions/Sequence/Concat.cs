@@ -1,12 +1,13 @@
 namespace Blinq;
 
-public struct ConcatIterator<TOut, TIterator>: IIterator<TOut>
-where TIterator: IIterator<TOut> {
-   TIterator Iterator1;
-   TIterator Iterator2;
+public struct ConcatIterator<TOut, TIterator1, TIterator2>: IIterator<TOut>
+where TIterator1: IIterator<TOut>
+where TIterator2: IIterator<TOut> {
+   TIterator1 Iterator1;
+   TIterator2 Iterator2;
    bool OnIterator1;
 
-   public ConcatIterator (TIterator iterator1, TIterator iterator2) {
+   public ConcatIterator (TIterator1 iterator1, TIterator2 iterator2) {
       Iterator1 = iterator1;
       Iterator2 = iterator2;
       OnIterator1 = true;
@@ -26,15 +27,17 @@ where TIterator: IIterator<TOut> {
 
 public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, ConcatIterator<T, TIterator>> Concat<T, TIterator> (
-      this in Sequence<T, TIterator> sequence1,
-      in Sequence<T, TIterator> sequence2
-   ) where TIterator: IIterator<T> {
+   public static Sequence<T, ConcatIterator<T, TIterator1, TIterator2>> Concat<T, TIterator1, TIterator2> (
+      this in Sequence<T, TIterator1> sequence1,
+      in Sequence<T, TIterator2> sequence2
+   )
+   where TIterator1: IIterator<T>
+   where TIterator2: IIterator<T> {
       var count = (sequence1.Count, sequence2.Count) switch {
-         ((true, var count1), (true, var count2)) => Option.Value(checked(count1 + count2)),
+         ((true, var count1), (true, var count2)) when int.MaxValue - count1 >= count2 => Option.Value(count1 + count2),
          _ => Option.None,
       };
-      var iterator = new ConcatIterator<T, TIterator>(sequence1.Iterator, sequence2.Iterator);
-      return new Sequence<T, ConcatIterator<T, TIterator>>(iterator, count);
+      var iterator = new ConcatIterator<T, TIterator1, TIterator2>(sequence1.Iterator, sequence2.Iterator);
+      return new Sequence<T, ConcatIterator<T, TIterator1, TIterator2>>(iterator, count);
    }
 }
