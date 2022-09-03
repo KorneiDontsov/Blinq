@@ -28,7 +28,7 @@ public static partial class Comparer {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static ByKeyComparer<T, TKey, TKeyComparer> ByKey<T, TKey, TKeyComparer> (
       Func<T, TKey> selectKey,
-      Func<ComparerProvider<TKey>, TKeyComparer> provideKeyComparer
+      ProvideComparer<TKey, TKeyComparer> provideKeyComparer
    )
    where TKeyComparer: IComparer<TKey> {
       return ByKey(selectKey, provideKeyComparer.Invoke());

@@ -22,7 +22,7 @@ public static partial class Sequence {
    public static Sequence<T, WhereIterator<T, NotEqualItemPredicate<T, TEqualer>, TIterator>> WhereNotEqual<T, TIterator, TEqualer> (
       this in Sequence<T, TIterator> sequence,
       T value,
-      Func<EqualerProvider<T>, TEqualer> provideEqualer
+      ProvideEqualer<T, TEqualer> provideEqualer
    )
    where TIterator: IIterator<T>
    where TEqualer: IEqualityComparer<T> {

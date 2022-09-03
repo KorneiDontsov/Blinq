@@ -42,7 +42,7 @@ public static partial class Equaler {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static ByKeyEqualer<T, TKey, TKeyEqualer> ByKey<T, TKey, TKeyEqualer> (
       Func<T, TKey> selectKey,
-      Func<EqualerProvider<TKey>, TKeyEqualer> provideKeyEqualer
+      ProvideEqualer<TKey, TKeyEqualer> provideKeyEqualer
    )
    where TKeyEqualer: IEqualityComparer<TKey> {
       return ByKey(selectKey, provideKeyEqualer.Invoke());
@@ -52,7 +52,7 @@ public static partial class Equaler {
    public static ByKeyEqualer<T, TKey, TKeyEqualer> ByKey<T, TKey, TKeyEqualer> (
       this EqualerProvider<T> _,
       Func<T, TKey> selectKey,
-      Func<EqualerProvider<TKey>, TKeyEqualer> provideKeyEqualer
+      ProvideEqualer<TKey, TKeyEqualer> provideKeyEqualer
    )
    where TKeyEqualer: IEqualityComparer<TKey> {
       return ByKey(selectKey, provideKeyEqualer);

@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Blinq;
+namespace Blinq.Collections;
 
 /// <summary>
 ///    Represents a collection that additionally implements <see cref="IIterable{T,TIterator}" /> and can be iterated.
@@ -15,7 +15,27 @@ public interface IIterableCollection<T, TIterator>: IIterable<T, TIterator>, IRe
    int IReadOnlyCollection<T>.Count => Count;
    int ICollection<T>.Count => Count;
 
+   bool ICollection<T>.IsReadOnly => true;
+
    IEnumerator IEnumerable.GetEnumerator () {
       return GetEnumerator();
+   }
+
+   bool Contains<TEqualer> (T item, TEqualer equaler) where TEqualer: IEqualityComparer<T>;
+
+   bool ICollection<T>.Contains (T item) {
+      return Contains(item, Equaler.Default<T>());
+   }
+
+   void ICollection<T>.Add (T item) {
+      throw new NotSupportedException();
+   }
+
+   bool ICollection<T>.Remove (T item) {
+      throw new NotSupportedException();
+   }
+
+   void ICollection<T>.Clear () {
+      throw new NotSupportedException();
    }
 }

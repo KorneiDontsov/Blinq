@@ -62,7 +62,7 @@ public static class CompareCondition {
 public static partial class Comparer {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static bool Compares<T, TCompareCondition, TComparer> (
-      T a,
+      this T a,
       T b,
       TCompareCondition compareCondition,
       TComparer comparer
@@ -74,10 +74,10 @@ public static partial class Comparer {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static bool Compares<T, TCompareCondition, TComparer> (
-      T a,
+      this T a,
       T b,
       TCompareCondition compareCondition,
-      Func<ComparerProvider<T>, TComparer> provideComparer
+      ProvideComparer<T, TComparer> provideComparer
    )
    where TCompareCondition: ICompareCondition
    where TComparer: IComparer<T> {
@@ -86,7 +86,7 @@ public static partial class Comparer {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static bool Compares<T, TCompareCondition> (
-      T a,
+      this T a,
       T b,
       TCompareCondition compareCondition
    )

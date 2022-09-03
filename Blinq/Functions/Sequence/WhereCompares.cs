@@ -23,7 +23,7 @@ public static partial class Sequence {
          this in Sequence<T, TIterator> sequence,
          T value,
          TCompareCondition compareCondition,
-         Func<ComparerProvider<T>, TComparer> provideComparer
+         ProvideComparer<T, TComparer> provideComparer
       )
    where TIterator: IIterator<T>
    where TCompareCondition: ICompareCondition
