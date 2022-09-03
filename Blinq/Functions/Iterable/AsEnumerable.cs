@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Blinq.Functions.Iterable;
+namespace Blinq;
 
 sealed class IterableAsEnumerable<T, TIterator>: IEnumerable<T> where TIterator: IIterator<T> {
    readonly IIterable<T, TIterator> Iterable;

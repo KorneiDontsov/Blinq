@@ -1,4 +1,4 @@
-namespace Blinq.Functions.Use;
+namespace Blinq;
 
 public readonly struct Use<T, TContract> {
    public readonly TContract Contract;

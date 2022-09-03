@@ -1,5 +1,4 @@
 using System.Linq;
-using Blinq.Functions.Iterable;
 
 namespace Blinq.Tests;
 

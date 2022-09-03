@@ -1,4 +1,4 @@
-namespace Blinq.Functions.Iterable;
+namespace Blinq;
 
 sealed class Iterable<T, TIterator>: IIterable<T, TIterator> where TIterator: IIterator<T> {
    readonly Func<Sequence<T, TIterator>> IteratorCreator;

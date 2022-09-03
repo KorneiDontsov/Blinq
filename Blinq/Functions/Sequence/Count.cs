@@ -1,4 +1,3 @@
-using Blinq.Functions.Use;
 using Blinq.Math;
 
 namespace Blinq;
