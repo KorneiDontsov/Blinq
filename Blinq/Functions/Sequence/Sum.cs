@@ -1,63 +1,69 @@
+using Blinq.Math;
+
 namespace Blinq;
 
-interface ISumTrait<T> {
-   T Zero ();
-   T Sum (T a, T b);
-}
-
-readonly struct Int32SumTrait: ISumTrait<int> {
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public int Zero () {
-      return 0;
-   }
+struct SumFoldFunc<T, TMath>: IFoldFunc<T, T> where TMath: IMathAdd<T> {
+   TMath Math;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public int Sum (int a, int b) {
-      return a + b;
-   }
-}
-
-readonly struct Int64SumTrait: ISumTrait<long> {
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public long Zero () {
-      return 0;
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public long Sum (long a, long b) {
-      return a + b;
-   }
-}
-
-readonly struct SumFoldFunc<T, TSumTrait>: IFoldFunc<T, T> where TSumTrait: ISumTrait<T> {
-   readonly TSumTrait SumTrait;
-
-   public SumFoldFunc (TSumTrait sumTrait) {
-      SumTrait = sumTrait;
+   public SumFoldFunc (TMath math) {
+      Math = math;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref T accumulator) {
-      accumulator = SumTrait.Sum(accumulator, item);
+      accumulator = Math.Add(accumulator, item);
       return false;
    }
 }
 
 public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   static T Sum<T, TIterator, TSumTrait> (this in Sequence<T, TIterator> sequence, TSumTrait sumTrait)
+   public static T Sum<T, TIterator, TMath> (this in Sequence<T, TIterator> sequence, TMath math)
    where TIterator: IIterator<T>
-   where TSumTrait: ISumTrait<T> {
-      return sequence.Iterator.Fold(sumTrait.Zero(), new SumFoldFunc<T, TSumTrait>(sumTrait));
+   where TMath: IMathZero<T>, IMathAdd<T> {
+      return sequence.Iterator.Fold(math.Zero(), new SumFoldFunc<T, TMath>(math));
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static T Sum<T, TIterator, TMath> (this in Sequence<T, TIterator> sequence, ProvideMath<T, TMath> provideMath)
+   where TIterator: IIterator<T>
+   where TMath: IMathZero<T>, IMathAdd<T> {
+      return sequence.Sum(provideMath.Invoke());
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int Sum<TIterator> (this in Sequence<int, TIterator> sequence) where TIterator: IIterator<int> {
-      return sequence.Sum(new Int32SumTrait());
+      return sequence.Sum(new Int32Math());
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static uint Sum<TIterator> (this in Sequence<uint, TIterator> sequence) where TIterator: IIterator<uint> {
+      return sequence.Sum(new UInt32Math());
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static long Sum<TIterator> (this in Sequence<long, TIterator> sequence) where TIterator: IIterator<long> {
-      return sequence.Sum(new Int64SumTrait());
+      return sequence.Sum(new Int64Math());
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static ulong Sum<TIterator> (this in Sequence<ulong, TIterator> sequence) where TIterator: IIterator<ulong> {
+      return sequence.Sum(new UInt64Math());
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static decimal Sum<TIterator> (this in Sequence<decimal, TIterator> sequence) where TIterator: IIterator<decimal> {
+      return sequence.Sum(new DecimalMath());
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static float Sum<TIterator> (this in Sequence<float, TIterator> sequence) where TIterator: IIterator<float> {
+      return sequence.Sum(new SingleFloatMath());
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static double Sum<TIterator> (this in Sequence<double, TIterator> sequence) where TIterator: IIterator<double> {
+      return sequence.Sum(new DoubleFloatMath());
    }
 }

@@ -57,7 +57,7 @@ public static partial class Sequence {
    where TZipper: IItemZipper<T1, T2, TResult> {
       var count =
          (sequence1.Count, sequence2.Count) switch {
-            ((true, var count1), (true, var count2)) => Option.Value(Math.Min(count1, count2)),
+            ((true, var count1), (true, var count2)) => Option.Value(System.Math.Min(count1, count2)),
             _ => Option.None,
          };
       var iterator = new ZipIterator<TResult, T1, T2, TZipper, T1Iterator, T2Iterator>(sequence1.Iterator, sequence2.Iterator, zipper);
