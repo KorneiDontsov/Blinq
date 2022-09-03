@@ -1,7 +1,7 @@
 namespace Blinq;
 
 struct WhereFoldFunc<T, TAccumulator, TPredicate, TInnerFoldFunc>: IFoldFunc<T, TAccumulator>
-where TPredicate: IItemPredicate<T>
+where TPredicate: IPredicate<T>
 where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
    TPredicate Predicate;
    TInnerFoldFunc InnerFoldFunc;
@@ -19,7 +19,7 @@ where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
 }
 
 public struct WhereIterator<T, TPredicate, TIterator>: IIterator<T>
-where TPredicate: IItemPredicate<T>
+where TPredicate: IPredicate<T>
 where TIterator: IIterator<T> {
    TIterator Iterator;
    readonly TPredicate Predicate;
@@ -44,7 +44,7 @@ public static partial class Sequence {
       TPredicate predicate
    )
    where TIterator: IIterator<T>
-   where TPredicate: IItemPredicate<T> {
+   where TPredicate: IPredicate<T> {
       return new WhereIterator<T, TPredicate, TIterator>(sequence.Iterator, predicate);
    }
 
@@ -52,11 +52,11 @@ public static partial class Sequence {
    /// <param name="predicate">A function to test each element for a condition.</param>
    /// <returns>A sequence that contains elements from the input <paramref name="sequence" /> that satisfy the condition.</returns>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, FuncItemPredicate<T>, TIterator>> Where<T, TIterator> (
+   public static Sequence<T, WhereIterator<T, FuncPredicate<T>, TIterator>> Where<T, TIterator> (
       this in Sequence<T, TIterator> sequence,
       Func<T, bool> predicate
    )
    where TIterator: IIterator<T> {
-      return sequence.Where(new FuncItemPredicate<T>(predicate));
+      return sequence.Where(new FuncPredicate<T>(predicate));
    }
 }

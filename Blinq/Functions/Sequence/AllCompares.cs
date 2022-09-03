@@ -13,7 +13,7 @@ public static partial class Sequence {
    where TIterator: IIterator<T>
    where TCompareCondition: ICompareCondition
    where TComparer: IComparer<T> {
-      return sequence.All(new ComparesItemPredicate<T, TCompareCondition, TComparer>(value, compareCondition, comparer));
+      return sequence.All(new ComparesPredicate<T, TCompareCondition, TComparer>(value, compareCondition, comparer));
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,7 +1,7 @@
 namespace Blinq;
 
 struct SelectFoldFunc<TIn, TAccumulator, TOut, TSelector, TInnerFoldFunc>: IFoldFunc<TIn, TAccumulator>
-where TSelector: IItemSelector<TIn, TOut>
+where TSelector: ISelector<TIn, TOut>
 where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
    TSelector Selector;
    TInnerFoldFunc InnerFoldFunc;
@@ -19,7 +19,7 @@ where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
 }
 
 public struct SelectIterator<TOut, TIn, TSelector, TInIterator>: IIterator<TOut>
-where TSelector: IItemSelector<TIn, TOut>
+where TSelector: ISelector<TIn, TOut>
 where TInIterator: IIterator<TIn> {
    TInIterator InIterator;
    readonly TSelector Selector;
@@ -44,7 +44,7 @@ public static partial class Sequence {
       TSelector selector
    )
    where TIterator: IIterator<T>
-   where TSelector: IItemSelector<T, TResult> {
+   where TSelector: ISelector<T, TResult> {
       return new Sequence<TResult, SelectIterator<TResult, T, TSelector, TIterator>>(
          new SelectIterator<TResult, T, TSelector, TIterator>(sequence.Iterator, selector),
          sequence.Count
@@ -56,11 +56,11 @@ public static partial class Sequence {
    /// <typeparam name="TResult">The type of the value returned by <paramref name="selector" />.</typeparam>
    /// <returns>A sequence whose elements are the result of invoking the transform function on each element of <paramref name="sequence" />.</returns>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TResult, SelectIterator<TResult, T, FuncItemSelector<T, TResult>, TIterator>> Select<T, TIterator, TResult> (
+   public static Sequence<TResult, SelectIterator<TResult, T, FuncSelector<T, TResult>, TIterator>> Select<T, TIterator, TResult> (
       this in Sequence<T, TIterator> sequence,
       Func<T, TResult> selector
    )
    where TIterator: IIterator<T> {
-      return sequence.Select<T, TIterator, TResult, FuncItemSelector<T, TResult>>(new FuncItemSelector<T, TResult>(selector));
+      return sequence.Select<T, TIterator, TResult, FuncSelector<T, TResult>>(new FuncSelector<T, TResult>(selector));
    }
 }

@@ -6,20 +6,20 @@ public static partial class Sequence {
    /// <inheritdoc cref="WhereEqual{T,TIterator}(Sequence{T,TIterator},T)" />
    /// <param name="equaler">An equality comparer to compare values.</param>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, EqualItemPredicate<T, TEqualer>, TIterator>> WhereEqual<T, TIterator, TEqualer> (
+   public static Sequence<T, WhereIterator<T, EqualPredicate<T, TEqualer>, TIterator>> WhereEqual<T, TIterator, TEqualer> (
       this in Sequence<T, TIterator> sequence,
       T value,
       TEqualer equaler
    )
    where TIterator: IIterator<T>
    where TEqualer: IEqualityComparer<T> {
-      return sequence.Where(new EqualItemPredicate<T, TEqualer>(value, equaler));
+      return sequence.Where(new EqualPredicate<T, TEqualer>(value, equaler));
    }
 
    /// <inheritdoc cref="WhereEqual{T,TIterator}(Sequence{T,TIterator},T)" />
    /// <param name="provideEqualer">A function that returns an equality comparer to compare values.</param>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, EqualItemPredicate<T, TEqualer>, TIterator>> WhereEqual<T, TIterator, TEqualer> (
+   public static Sequence<T, WhereIterator<T, EqualPredicate<T, TEqualer>, TIterator>> WhereEqual<T, TIterator, TEqualer> (
       this in Sequence<T, TIterator> sequence,
       T value,
       ProvideEqualer<T, TEqualer> provideEqualer
@@ -38,7 +38,7 @@ public static partial class Sequence {
    ///    <paramref name="value" />.
    /// </returns>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, EqualItemPredicate<T, DefaultEqualer<T>>, TIterator>> WhereEqual<T, TIterator> (
+   public static Sequence<T, WhereIterator<T, EqualPredicate<T, DefaultEqualer<T>>, TIterator>> WhereEqual<T, TIterator> (
       this in Sequence<T, TIterator> sequence,
       T value
    ) where TIterator: IIterator<T> {

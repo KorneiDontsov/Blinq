@@ -13,7 +13,7 @@ public static partial class Sequence {
          FlattenIterator<
             TResult,
             TResultIterator,
-            SelectIterator<Sequence<TResult, TResultIterator>, T, FuncItemSelector<T, Sequence<TResult, TResultIterator>>, TIterator>>>
+            SelectIterator<Sequence<TResult, TResultIterator>, T, FuncSelector<T, Sequence<TResult, TResultIterator>>, TIterator>>>
       SelectMany<T, TIterator, TResult, TResultIterator> (
          this in Sequence<T, TIterator> sequence,
          Func<T, Sequence<TResult, TResultIterator>> selector
@@ -23,11 +23,11 @@ public static partial class Sequence {
       return new FlattenIterator<
          TResult,
          TResultIterator,
-         SelectIterator<Sequence<TResult, TResultIterator>, T, FuncItemSelector<T, Sequence<TResult, TResultIterator>>, TIterator>
+         SelectIterator<Sequence<TResult, TResultIterator>, T, FuncSelector<T, Sequence<TResult, TResultIterator>>, TIterator>
       >(
-         new SelectIterator<Sequence<TResult, TResultIterator>, T, FuncItemSelector<T, Sequence<TResult, TResultIterator>>, TIterator>(
+         new SelectIterator<Sequence<TResult, TResultIterator>, T, FuncSelector<T, Sequence<TResult, TResultIterator>>, TIterator>(
             sequence.Iterator,
-            new FuncItemSelector<T, Sequence<TResult, TResultIterator>>(selector)
+            new FuncSelector<T, Sequence<TResult, TResultIterator>>(selector)
          )
       );
    }

@@ -1,7 +1,7 @@
 namespace Blinq;
 
 struct FilterFoldFunc<TIn, TAccumulator, TOut, TSelector, TInnerFoldFunc>: IFoldFunc<TIn, TAccumulator>
-where TSelector: IItemSelector<TIn, Option<TOut>>
+where TSelector: ISelector<TIn, Option<TOut>>
 where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
    TSelector Selector;
    TInnerFoldFunc InnerFoldFunc;
@@ -19,7 +19,7 @@ where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
 }
 
 public struct FilterIterator<TOut, TIn, TSelector, TInIterator>: IIterator<TOut>
-where TSelector: IItemSelector<TIn, Option<TOut>>
+where TSelector: ISelector<TIn, Option<TOut>>
 where TInIterator: IIterator<TIn> {
    TInIterator InIterator;
    readonly TSelector Selector;
@@ -57,15 +57,15 @@ public static partial class Sequence {
       TSelector selector
    )
    where TIterator: IIterator<T>
-   where TSelector: IItemSelector<T, Option<TResult>> {
+   where TSelector: ISelector<T, Option<TResult>> {
       return new FilterIterator<TResult, T, TSelector, TIterator>(sequence.Iterator, selector);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TResult, FilterIterator<TResult, T, FuncItemSelector<T, Option<TResult>>, TIterator>> Filter<T, TIterator, TResult> (
+   public static Sequence<TResult, FilterIterator<TResult, T, FuncSelector<T, Option<TResult>>, TIterator>> Filter<T, TIterator, TResult> (
       this in Sequence<T, TIterator> sequence,
       Func<T, Option<TResult>> selector
    ) where TIterator: IIterator<T> {
-      return sequence.Filter<T, TIterator, TResult, FuncItemSelector<T, Option<TResult>>>(new FuncItemSelector<T, Option<TResult>>(selector));
+      return sequence.Filter<T, TIterator, TResult, FuncSelector<T, Option<TResult>>>(new FuncSelector<T, Option<TResult>>(selector));
    }
 }

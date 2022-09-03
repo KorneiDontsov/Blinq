@@ -1,10 +1,10 @@
 namespace Blinq;
 
-public readonly struct FuncItemPredicate<T>: IItemPredicate<T> {
+public readonly struct FuncPredicate<T>: IPredicate<T> {
    readonly Func<T, bool> Func;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public FuncItemPredicate (Func<T, bool> func) {
+   public FuncPredicate (Func<T, bool> func) {
       Func = func;
    }
 

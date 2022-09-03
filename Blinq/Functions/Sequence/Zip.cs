@@ -3,7 +3,7 @@ namespace Blinq;
 struct ZipFoldFunc<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TInnerFoldFunc>:
    IFoldFunc<TIn1, (TAccumulator accumulator, TIn2Iterator iterator2)>
 where TIn2Iterator: IIterator<TIn2>
-where TZipper: IItemZipper<TIn1, TIn2, TOut>
+where TZipper: IZipper<TIn1, TIn2, TOut>
 where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
    TZipper Zipper;
    TInnerFoldFunc InnerFoldFunc;
@@ -24,7 +24,7 @@ where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
 public struct ZipIterator<TOut, TIn1, TIn2, TZipper, TIn1Iterator, TIn2Iterator>: IIterator<TOut>
 where TIn1Iterator: IIterator<TIn1>
 where TIn2Iterator: IIterator<TIn2>
-where TZipper: IItemZipper<TIn1, TIn2, TOut> {
+where TZipper: IZipper<TIn1, TIn2, TOut> {
    TIn1Iterator Iterator1;
    TIn2Iterator Iterator2;
    readonly TZipper Zipper;
@@ -54,7 +54,7 @@ public static partial class Sequence {
       )
    where T1Iterator: IIterator<T1>
    where T2Iterator: IIterator<T2>
-   where TZipper: IItemZipper<T1, T2, TResult> {
+   where TZipper: IZipper<T1, T2, TResult> {
       var count =
          (sequence1.Count, sequence2.Count) switch {
             ((true, var count1), (true, var count2)) => Option.Value(System.Math.Min(count1, count2)),
@@ -65,7 +65,7 @@ public static partial class Sequence {
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TResult, ZipIterator<TResult, T1, T2, FuncItemZipper<T1, T2, TResult>, T1Iterator, T2Iterator>>
+   public static Sequence<TResult, ZipIterator<TResult, T1, T2, FuncZipper<T1, T2, TResult>, T1Iterator, T2Iterator>>
       Zip<T1, T1Iterator, T2, T2Iterator, TResult> (
          this in Sequence<T1, T1Iterator> sequence1,
          Sequence<T2, T2Iterator> sequence2,
@@ -73,20 +73,20 @@ public static partial class Sequence {
       )
    where T1Iterator: IIterator<T1>
    where T2Iterator: IIterator<T2> {
-      return sequence1.Zip<T1, T1Iterator, T2, T2Iterator, TResult, FuncItemZipper<T1, T2, TResult>>(
+      return sequence1.Zip<T1, T1Iterator, T2, T2Iterator, TResult, FuncZipper<T1, T2, TResult>>(
          sequence2,
-         new FuncItemZipper<T1, T2, TResult>(zipper)
+         new FuncZipper<T1, T2, TResult>(zipper)
       );
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<(T1, T2), ZipIterator<(T1, T2), T1, T2, TupleItemZipper<T1, T2>, T1Iterator, T2Iterator>>
+   public static Sequence<(T1, T2), ZipIterator<(T1, T2), T1, T2, TupleZipper<T1, T2>, T1Iterator, T2Iterator>>
       Zip<T1, T1Iterator, T2, T2Iterator> (
          this in Sequence<T1, T1Iterator> sequence1,
          Sequence<T2, T2Iterator> sequence2
       )
    where T1Iterator: IIterator<T1>
    where T2Iterator: IIterator<T2> {
-      return sequence1.Zip<T1, T1Iterator, T2, T2Iterator, (T1, T2), TupleItemZipper<T1, T2>>(sequence2, new TupleItemZipper<T1, T2>());
+      return sequence1.Zip<T1, T1Iterator, T2, T2Iterator, (T1, T2), TupleZipper<T1, T2>>(sequence2, new TupleZipper<T1, T2>());
    }
 }

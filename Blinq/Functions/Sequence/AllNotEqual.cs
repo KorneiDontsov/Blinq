@@ -7,7 +7,7 @@ public static partial class Sequence {
    public static bool AllNotEqual<T, TIterator, TEqualer> (this in Sequence<T, TIterator> sequence, T value, TEqualer equaler)
    where TIterator: IIterator<T>
    where TEqualer: IEqualityComparer<T> {
-      return sequence.All(new NotEqualItemPredicate<T, TEqualer>(value, equaler));
+      return sequence.All(new NotEqualPredicate<T, TEqualer>(value, equaler));
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

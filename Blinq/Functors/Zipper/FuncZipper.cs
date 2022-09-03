@@ -1,10 +1,10 @@
 namespace Blinq;
 
-public readonly struct FuncItemZipper<TIn1, TIn2, TOut>: IItemZipper<TIn1, TIn2, TOut> {
+public readonly struct FuncZipper<TIn1, TIn2, TOut>: IZipper<TIn1, TIn2, TOut> {
    readonly Func<TIn1, TIn2, TOut> Func;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public FuncItemZipper (Func<TIn1, TIn2, TOut> func) {
+   public FuncZipper (Func<TIn1, TIn2, TOut> func) {
       Func = func;
    }
 
