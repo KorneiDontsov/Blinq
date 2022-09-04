@@ -3,11 +3,11 @@ namespace Blinq.Math;
 public readonly struct MathProvider<T> { }
 
 // ReSharper disable once TypeParameterCanBeVariant
-public delegate TMath ProvideMath<T, TMath> (MathProvider<T> mathProvider) where TMath: IMathContract<T>;
+public delegate TMath ProvideMath<T, TMath> (MathProvider<T> mathProvider) where TMath: IMath<T>;
 
 public static class MathProviding {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static TMath Invoke<T, TMath> (this ProvideMath<T, TMath> provideMath) where TMath: IMathContract<T> {
+   public static TMath Invoke<T, TMath> (this ProvideMath<T, TMath> provideMath) where TMath: IMath<T> {
       return provideMath(new MathProvider<T>());
    }
 

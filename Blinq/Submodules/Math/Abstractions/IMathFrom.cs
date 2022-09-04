@@ -3,6 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 namespace Blinq.Math;
 
 [SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]
-public interface IMathFrom<T, TFrom>: IMathContract<T> {
+public interface IMathFrom<T, TFrom>: IMath<T> {
    T From (TFrom n);
 }

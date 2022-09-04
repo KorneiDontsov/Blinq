@@ -18,10 +18,10 @@ struct CountFoldFunc<T, TCounter, TMath>: IFoldFunc<T, TCounter> where TMath: IM
 }
 
 public static partial class Sequence {
-   public static TCounter Count<T, TIterator, TCounter, TMath> (this in Sequence<T, TIterator> sequence, Use<TCounter, TMath> mathUse)
+   public static TCounter Count<T, TIterator, TCounter, TMath> (this in Sequence<T, TIterator> sequence, Use<IMath<TCounter>, TMath> mathUse)
    where TIterator: IIterator<T>
    where TMath: IMathZero<TCounter>, IMathOne<TCounter>, IMathFrom<TCounter, int>, IMathAdd<TCounter> {
-      var math = mathUse.Contract;
+      var math = mathUse.Value;
       return sequence.Count switch {
          (true, var count) => math.From(count),
          _ => sequence.Iterator.Fold(math.Zero(), new CountFoldFunc<T, TCounter, TMath>(math)),
@@ -35,11 +35,11 @@ public static partial class Sequence {
    /// </exception>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int Count<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
-      return sequence.Count(new Use<int, Int32Math>(new Int32Math()));
+      return sequence.Count(new Use<IMath<int>, Int32Math>(new Int32Math()));
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static long LongCount<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
-      return sequence.Count(new Use<long, Int64Math>(new Int64Math()));
+      return sequence.Count(new Use<IMath<long>, Int64Math>(new Int64Math()));
    }
 }
