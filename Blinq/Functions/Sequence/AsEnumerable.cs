@@ -11,7 +11,7 @@ sealed class IteratorAsEnumerable<T, TIterator>: IEnumerable<T> where TIterator:
    }
 
    public IEnumerator<T> GetEnumerator () {
-      if (Iterator is (true, var iterator)) {
+      if (Iterator.Is(out var iterator)) {
          Iterator = Option.None;
          return new IteratorEnumerator<T, TIterator>(iterator);
       } else {

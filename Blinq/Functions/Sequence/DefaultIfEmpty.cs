@@ -21,7 +21,7 @@ public struct DefaultIfEmptyIterator<T, TIterator>: IIterator<T> where TIterator
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
       switch (Position) {
-         case DefaultIfEmptyIteratorPosition.Start when Sequence<T>.Pop(ref Iterator) is (true, var first): {
+         case DefaultIfEmptyIteratorPosition.Start when Sequence<T>.Pop(ref Iterator).Is(out var first): {
             Position = DefaultIfEmptyIteratorPosition.Middle;
             if (func.Invoke(first, ref seed)) {
                return seed;

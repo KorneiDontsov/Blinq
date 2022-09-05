@@ -1,21 +1,5 @@
 namespace Blinq;
 
-readonly struct ChunkFoldFunc<T, TCollection, TBuilder, TCollector>: IFoldFunc<T, (TBuilder builder, int countLeft)>
-where TCollector: ICollector<T, TCollection, TBuilder> {
-   readonly TCollector Collector;
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public ChunkFoldFunc (TCollector collector) {
-      Collector = collector;
-   }
-
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (T item, ref (TBuilder builder, int countLeft) accumulator) {
-      Collector.Add(ref accumulator.builder, item);
-      return --accumulator.countLeft == 0;
-   }
-}
-
 public struct ChunkIterator<TCollection, TBuilder, TCollector, T, TIterator>: IIterator<TCollection>
 where TCollector: ICollector<T, TCollection, TBuilder>
 where TIterator: IIterator<T> {
@@ -35,7 +19,9 @@ where TIterator: IIterator<T> {
    public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TCollection, TAccumulator> {
       while (!Completed) {
          var builder = Collector.CreateBuilder();
-         (builder, var countLeft) = Iterator.Fold((builder, Size), new ChunkFoldFunc<T, TCollection, TBuilder, TCollector>(Collector));
+         var collectFoldFunc = new CollectFoldFunc<T, TCollection, TBuilder, TCollector>(Collector);
+         var takeFoldFunc = new TakeFoldFunc<T, TBuilder, CollectFoldFunc<T, TCollection, TBuilder, TCollector>>(collectFoldFunc);
+         (builder, var countLeft) = Iterator.Fold((builder, Size), takeFoldFunc);
          var collection = Collector.Build(builder);
 
          Completed = countLeft > 0;

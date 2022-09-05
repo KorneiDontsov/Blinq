@@ -40,11 +40,11 @@ public static partial class Sequence {
       var indexValue = index.Value;
       if (!index.IsFromEnd) {
          return sequence.At(indexValue);
-      } else if (sequence.Count is (true, var count)) {
+      } else if (sequence.Count.Is(out var count)) {
          return sequence.At(count - indexValue);
       } else {
          var iterator = sequence.Iterator;
-         if (Sequence<T>.Pop(ref iterator) is (true, var first)) {
+         if (Sequence<T>.Pop(ref iterator).Is(out var first)) {
             var queue = new Queue<T>();
             queue.Enqueue(first);
 

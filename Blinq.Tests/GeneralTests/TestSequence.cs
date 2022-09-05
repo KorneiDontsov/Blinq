@@ -103,7 +103,7 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
       var expected = 0;
 
       var sequence = Range(n).Capture(capture);
-      while (sequence.Pop() is (true, var item)) {
+      while (sequence.Pop().Is(out var item)) {
          Assert.AreEqual(expected, item.Value);
          Assert.AreSame(capture, item.Capture);
          ++expected;

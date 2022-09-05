@@ -16,7 +16,7 @@ where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (TIn1 item1, ref (TAccumulator accumulator, TIn2Iterator iterator2) state) {
-      return Sequence<TIn2>.Pop(ref state.iterator2) is (true, var item2)
+      return Sequence<TIn2>.Pop(ref state.iterator2).Is(out var item2)
          && InnerFoldFunc.Invoke(Zipper.Invoke(item1, item2), ref state.accumulator);
    }
 }

@@ -14,7 +14,7 @@ where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (TIn item, ref TAccumulator accumulator) {
-      return Selector.Invoke(item) is (true, var outItem) && InnerFoldFunc.Invoke(outItem, ref accumulator);
+      return Selector.Invoke(item).Is(out var outItem) && InnerFoldFunc.Invoke(outItem, ref accumulator);
    }
 }
 
