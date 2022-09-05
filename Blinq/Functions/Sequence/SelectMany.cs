@@ -7,17 +7,16 @@ public static partial class Sequence {
    ///    A sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence.
    /// </returns>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static
-      Sequence<
+   public static Sequence<
+      TResult,
+      FlattenIterator<
          TResult,
-         FlattenIterator<
-            TResult,
-            TResultIterator,
-            SelectIterator<Sequence<TResult, TResultIterator>, T, FuncSelector<T, Sequence<TResult, TResultIterator>>, TIterator>>>
-      SelectMany<T, TIterator, TResult, TResultIterator> (
-         this in Sequence<T, TIterator> sequence,
-         Func<T, Sequence<TResult, TResultIterator>> selector
-      )
+         TResultIterator,
+         SelectIterator<Sequence<TResult, TResultIterator>, T, FuncSelector<T, Sequence<TResult, TResultIterator>>, TIterator>>
+   > SelectMany<T, TIterator, TResult, TResultIterator> (
+      this in Sequence<T, TIterator> sequence,
+      Func<T, Sequence<TResult, TResultIterator>> selector
+   )
    where TIterator: IIterator<T>
    where TResultIterator: IIterator<TResult> {
       return new FlattenIterator<

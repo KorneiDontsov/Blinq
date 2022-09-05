@@ -1,8 +1,8 @@
 namespace Blinq;
 
-struct InterruptingFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, (TAccumulator Accumulator, bool Interrupted)>
+readonly struct InterruptingFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, (TAccumulator Accumulator, bool Interrupted)>
 where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public InterruptingFoldFunc (TInnerFoldFunc innerFoldFunc) {

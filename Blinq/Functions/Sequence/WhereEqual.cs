@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Blinq;
 
 public static partial class Sequence {

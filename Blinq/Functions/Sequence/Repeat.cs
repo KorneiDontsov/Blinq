@@ -25,6 +25,6 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, RepeatIterator<T>> Repeat<T> (T item, int count) {
       if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), count, null);
-      return new Sequence<T, RepeatIterator<T>>(new RepeatIterator<T>(item, count), count);
+      return Sequence<T>.Create(new RepeatIterator<T>(item, count), count);
    }
 }

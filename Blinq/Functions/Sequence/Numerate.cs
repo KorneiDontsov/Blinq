@@ -1,8 +1,8 @@
 namespace Blinq;
 
-struct NumerateFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, (TAccumulator Accumulator, int Position)>
+readonly struct NumerateFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, (TAccumulator Accumulator, int Position)>
 where TInnerFoldFunc: IFoldFunc<NumeratedItem<T>, TAccumulator> {
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public NumerateFoldFunc (TInnerFoldFunc innerFoldFunc) {
@@ -40,9 +40,6 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<NumeratedItem<T>, NumerateIterator<T, TIterator>> Numerate<T, TIterator> (this in Sequence<T, TIterator> sequence)
    where TIterator: IIterator<T> {
-      return new Sequence<NumeratedItem<T>, NumerateIterator<T, TIterator>>(
-         new NumerateIterator<T, TIterator>(sequence.Iterator),
-         sequence.Count
-      );
+      return Sequence<NumeratedItem<T>>.Create(new NumerateIterator<T, TIterator>(sequence.Iterator), sequence.Count);
    }
 }

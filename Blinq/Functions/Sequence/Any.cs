@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
 
 readonly struct AnyFoldFunc<T>: IFoldFunc<T, bool> {

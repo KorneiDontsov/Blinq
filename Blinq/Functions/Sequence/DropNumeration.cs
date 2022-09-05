@@ -1,8 +1,8 @@
 namespace Blinq;
 
-struct DropNumerationFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<NumeratedItem<T>, TAccumulator>
+readonly struct DropNumerationFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<NumeratedItem<T>, TAccumulator>
 where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public DropNumerationFoldFunc (TInnerFoldFunc innerFoldFunc) {
@@ -38,9 +38,6 @@ public static partial class Sequence {
       this in Sequence<NumeratedItem<T>, TIterator> sequence
    )
    where TIterator: IIterator<NumeratedItem<T>> {
-      return new Sequence<T, DropNumerationIterator<T, TIterator>>(
-         new DropNumerationIterator<T, TIterator>(sequence.Iterator),
-         sequence.Count
-      );
+      return Sequence<T>.Create(new DropNumerationIterator<T, TIterator>(sequence.Iterator), sequence.Count);
    }
 }

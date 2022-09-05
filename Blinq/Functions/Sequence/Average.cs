@@ -2,8 +2,8 @@ using Blinq.Math;
 
 namespace Blinq;
 
-struct AverageFoldFunc<T, TMath>: IFoldFunc<T, (T Sum, T Count)> where TMath: IMathOne<T>, IMathAdd<T> {
-   TMath Math;
+readonly struct AverageFoldFunc<T, TMath>: IFoldFunc<T, (T Sum, T Count)> where TMath: IMathOne<T>, IMathAdd<T> {
+   readonly TMath Math;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public AverageFoldFunc (TMath math) {

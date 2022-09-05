@@ -14,6 +14,6 @@ public static partial class Sequence {
    /// <returns>Empty sequence.</returns>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, EmptyIterator<T>> Empty<T> () {
-      return default;
+      return Sequence<T>.Create(new EmptyIterator<T>(), count: 0);
    }
 }

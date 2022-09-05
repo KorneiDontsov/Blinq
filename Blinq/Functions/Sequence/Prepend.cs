@@ -25,14 +25,13 @@ public struct PrependIterator<T, TIterator>: IIterator<T> where TIterator: IIter
 }
 
 public static partial class Sequence {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, PrependIterator<T, TIterator>> Prepend<T, TIterator> (this in Sequence<T, TIterator> sequence, T element)
    where TIterator: IIterator<T> {
-      return new Sequence<T, PrependIterator<T, TIterator>>(
-         new PrependIterator<T, TIterator>(sequence.Iterator, element),
-         sequence.Count switch {
-            (true, var count) => Option.Value(checked(count + 1)),
-            _ => Option.None,
-         }
-      );
+      var newCount = sequence.Count switch {
+         (true, var count) => Option.Value(checked(count + 1)),
+         _ => Option.None,
+      };
+      return Sequence<T>.Create(new PrependIterator<T, TIterator>(sequence.Iterator, element), newCount);
    }
 }

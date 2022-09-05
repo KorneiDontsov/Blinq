@@ -1,10 +1,10 @@
 namespace Blinq;
 
-struct SelectFoldFunc<TIn, TAccumulator, TOut, TSelector, TInnerFoldFunc>: IFoldFunc<TIn, TAccumulator>
+readonly struct SelectFoldFunc<TIn, TAccumulator, TOut, TSelector, TInnerFoldFunc>: IFoldFunc<TIn, TAccumulator>
 where TSelector: ISelector<TIn, TOut>
 where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
-   TSelector Selector;
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TSelector Selector;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public SelectFoldFunc (TSelector selector, TInnerFoldFunc innerFoldFunc) {
@@ -41,14 +41,12 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<TResult, SelectIterator<TResult, T, TSelector, TIterator>> Select<T, TIterator, TResult, TSelector> (
       this in Sequence<T, TIterator> sequence,
-      TSelector selector
+      TSelector selector,
+      Use<TResult> resultUse = default
    )
    where TIterator: IIterator<T>
    where TSelector: ISelector<T, TResult> {
-      return new Sequence<TResult, SelectIterator<TResult, T, TSelector, TIterator>>(
-         new SelectIterator<TResult, T, TSelector, TIterator>(sequence.Iterator, selector),
-         sequence.Count
-      );
+      return Sequence<TResult>.Create(new SelectIterator<TResult, T, TSelector, TIterator>(sequence.Iterator, selector), sequence.Count);
    }
 
    /// <summary>Projects each element of a sequence into a new form.</summary>
@@ -61,6 +59,6 @@ public static partial class Sequence {
       Func<T, TResult> selector
    )
    where TIterator: IIterator<T> {
-      return sequence.Select<T, TIterator, TResult, FuncSelector<T, TResult>>(new FuncSelector<T, TResult>(selector));
+      return sequence.Select(new FuncSelector<T, TResult>(selector), Use<TResult>.Here);
    }
 }

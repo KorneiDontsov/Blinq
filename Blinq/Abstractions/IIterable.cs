@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
 
 /// <summary>Exposes the iterator, which supports a simple iteration over a sequence.</summary>

@@ -29,12 +29,10 @@ public struct AppendIterator<T, TIterator>: IIterator<T> where TIterator: IItera
 public static partial class Sequence {
    public static Sequence<T, AppendIterator<T, TIterator>> Append<T, TIterator> (this in Sequence<T, TIterator> sequence, T element)
    where TIterator: IIterator<T> {
-      return new Sequence<T, AppendIterator<T, TIterator>>(
-         new AppendIterator<T, TIterator>(sequence.Iterator, element),
-         sequence.Count switch {
-            (true, var count) => Option.Value(checked(count + 1)),
-            _ => Option.None,
-         }
-      );
+      var newCount = sequence.Count switch {
+         (true, var count) => Option.Value(checked(count + 1)),
+         _ => Option.None,
+      };
+      return Sequence<T>.Create(new AppendIterator<T, TIterator>(sequence.Iterator, element), newCount);
    }
 }

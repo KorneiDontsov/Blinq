@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Blinq;
 
 public readonly struct ByImplEqualer<T>: IEqualityComparer<T> where T: IEquatable<T> {

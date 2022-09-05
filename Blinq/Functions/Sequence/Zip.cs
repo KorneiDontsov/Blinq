@@ -1,12 +1,12 @@
 namespace Blinq;
 
-struct ZipFoldFunc<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TInnerFoldFunc>:
+readonly struct ZipFoldFunc<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TInnerFoldFunc>:
    IFoldFunc<TIn1, (TAccumulator accumulator, TIn2Iterator iterator2)>
 where TIn2Iterator: IIterator<TIn2>
 where TZipper: IZipper<TIn1, TIn2, TOut>
 where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
-   TZipper Zipper;
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TZipper Zipper;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ZipFoldFunc (TZipper zipper, TInnerFoldFunc innerFoldFunc) {
@@ -50,7 +50,8 @@ public static partial class Sequence {
       Zip<T1, T1Iterator, T2, T2Iterator, TResult, TZipper> (
          this in Sequence<T1, T1Iterator> sequence1,
          Sequence<T2, T2Iterator> sequence2,
-         TZipper zipper
+         TZipper zipper,
+         Use<TResult> resultUse = default
       )
    where T1Iterator: IIterator<T1>
    where T2Iterator: IIterator<T2>
@@ -61,7 +62,7 @@ public static partial class Sequence {
             _ => Option.None,
          };
       var iterator = new ZipIterator<TResult, T1, T2, TZipper, T1Iterator, T2Iterator>(sequence1.Iterator, sequence2.Iterator, zipper);
-      return new Sequence<TResult, ZipIterator<TResult, T1, T2, TZipper, T1Iterator, T2Iterator>>(iterator, count);
+      return Sequence<TResult>.Create(iterator, count);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -73,10 +74,7 @@ public static partial class Sequence {
       )
    where T1Iterator: IIterator<T1>
    where T2Iterator: IIterator<T2> {
-      return sequence1.Zip<T1, T1Iterator, T2, T2Iterator, TResult, FuncZipper<T1, T2, TResult>>(
-         sequence2,
-         new FuncZipper<T1, T2, TResult>(zipper)
-      );
+      return sequence1.Zip(sequence2, new FuncZipper<T1, T2, TResult>(zipper), Use<TResult>.Here);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,6 +85,6 @@ public static partial class Sequence {
       )
    where T1Iterator: IIterator<T1>
    where T2Iterator: IIterator<T2> {
-      return sequence1.Zip<T1, T1Iterator, T2, T2Iterator, (T1, T2), TupleZipper<T1, T2>>(sequence2, new TupleZipper<T1, T2>());
+      return sequence1.Zip(sequence2, new TupleZipper<T1, T2>(), Use<(T1, T2)>.Here);
    }
 }

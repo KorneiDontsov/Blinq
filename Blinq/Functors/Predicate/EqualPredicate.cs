@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Blinq;
 
 public readonly struct EqualPredicate<T, TEqualer>: IPredicate<T> where TEqualer: IEqualityComparer<T> {

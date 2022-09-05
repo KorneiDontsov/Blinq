@@ -1,24 +1,23 @@
 using System.Collections;
-using System.Collections.Generic;
 
 namespace Blinq;
 
 sealed class IteratorEnumerator<T, TIterator>: IEnumerator<T> where TIterator: IIterator<T> {
    TIterator Iterator;
-   T Item = default!;
+   public T Current { get; private set; }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public IteratorEnumerator (TIterator iterator) {
       Iterator = iterator;
+      Current = default!;
    }
-
-   public T Current => Item;
 
    object? IEnumerator.Current => Current;
 
    public bool MoveNext () {
-      Sequence<T>.Pop(ref Iterator).Deconstruct(out var hasValue, out Item);
-      return hasValue;
+      var result = Sequence<T>.Pop(ref Iterator);
+      Current = result.ValueOrDefault!;
+      return result.HasValue;
    }
 
    public void Dispose () { }

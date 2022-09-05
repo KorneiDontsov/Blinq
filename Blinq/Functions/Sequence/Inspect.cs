@@ -1,8 +1,8 @@
 namespace Blinq;
 
-struct InspectFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, TAccumulator> where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
+readonly struct InspectFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, TAccumulator> where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
    readonly Action<T> Action;
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public InspectFoldFunc (Action<T> action, TInnerFoldFunc innerFoldFunc) {
@@ -43,9 +43,6 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, InspectIterator<T, TIterator>> Inspect<T, TIterator> (this in Sequence<T, TIterator> sequence, Action<T> action)
    where TIterator: IIterator<T> {
-      return new Sequence<T, InspectIterator<T, TIterator>>(
-         new InspectIterator<T, TIterator>(sequence.Iterator, action),
-         sequence.Count
-      );
+      return Sequence<T>.Create(new InspectIterator<T, TIterator>(sequence.Iterator, action), sequence.Count);
    }
 }

@@ -2,8 +2,8 @@ using Blinq.Math;
 
 namespace Blinq;
 
-struct SumFoldFunc<T, TMath>: IFoldFunc<T, T> where TMath: IMathAdd<T> {
-   TMath Math;
+readonly struct SumFoldFunc<T, TMath>: IFoldFunc<T, T> where TMath: IMathAdd<T> {
+   readonly TMath Math;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public SumFoldFunc (TMath math) {

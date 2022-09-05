@@ -7,6 +7,9 @@
 
     <ItemGroup>
         <Using Include="System" />
+        <Using Include="System.ComponentModel" />
+        <Using Include="System.Collections.Generic" />
+        <Using Include="System.Diagnostics.CodeAnalysis" />
         <Using Include="System.Runtime.CompilerServices" />
     </ItemGroup>
 </Project>

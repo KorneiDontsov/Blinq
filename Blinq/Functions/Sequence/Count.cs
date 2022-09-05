@@ -2,8 +2,8 @@ using Blinq.Math;
 
 namespace Blinq;
 
-struct CountFoldFunc<T, TCounter, TMath>: IFoldFunc<T, TCounter> where TMath: IMathOne<TCounter>, IMathAdd<TCounter> {
-   TMath Math;
+readonly struct CountFoldFunc<T, TCounter, TMath>: IFoldFunc<T, TCounter> where TMath: IMathOne<TCounter>, IMathAdd<TCounter> {
+   readonly TMath Math;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public CountFoldFunc (TMath math) {
@@ -18,13 +18,12 @@ struct CountFoldFunc<T, TCounter, TMath>: IFoldFunc<T, TCounter> where TMath: IM
 }
 
 public static partial class Sequence {
-   public static TCounter Count<T, TIterator, TCounter, TMath> (this in Sequence<T, TIterator> sequence, Use<IMath<TCounter>, TMath> mathUse)
+   public static TCounter Count<T, TIterator, TCounter, TMath> (this in Sequence<T, TIterator> sequence, Use<IMath<TCounter>, TMath> math)
    where TIterator: IIterator<T>
    where TMath: IMathZero<TCounter>, IMathOne<TCounter>, IMathFrom<TCounter, int>, IMathAdd<TCounter> {
-      var math = mathUse.Value;
       return sequence.Count switch {
-         (true, var count) => math.From(count),
-         _ => sequence.Iterator.Fold(math.Zero(), new CountFoldFunc<T, TCounter, TMath>(math)),
+         (true, var count) => math.Value.From(count),
+         _ => sequence.Iterator.Fold(math.Value.Zero(), new CountFoldFunc<T, TCounter, TMath>(math)),
       };
    }
 

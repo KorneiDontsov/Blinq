@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Blinq;
 
 public readonly struct ByKeyEqualer<T, TKey, TKeyEqualer>: IEqualityComparer<T> where TKeyEqualer: IEqualityComparer<TKey> {

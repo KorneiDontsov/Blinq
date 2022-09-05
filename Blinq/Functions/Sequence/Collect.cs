@@ -1,8 +1,8 @@
 namespace Blinq;
 
-struct CollectFoldFunc<T, TCollection, TBuilder, TCollector>: IFoldFunc<T, TBuilder>
+readonly struct CollectFoldFunc<T, TCollection, TBuilder, TCollector>: IFoldFunc<T, TBuilder>
 where TCollector: ICollector<T, TCollection, TBuilder> {
-   TCollector Collector;
+   readonly TCollector Collector;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public CollectFoldFunc (TCollector collector) {
@@ -20,13 +20,12 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static TCollection Collect<T, TIterator, TCollection, TBuilder, TCollector> (
       this in Sequence<T, TIterator> sequence,
-      Use<ICollector<T, TCollection, TBuilder>, TCollector> collectorUse
+      Use<ICollector<T, TCollection, TBuilder>, TCollector> collector
    )
    where TIterator: IIterator<T>
    where TCollector: ICollector<T, TCollection, TBuilder> {
-      var collector = collectorUse.Value;
-      var builder = sequence.Iterator.Fold(collector.CreateBuilder(), new CollectFoldFunc<T, TCollection, TBuilder, TCollector>(collector));
-      return collector.Build(builder);
+      var builder = sequence.Iterator.Fold(collector.Value.CreateBuilder(), new CollectFoldFunc<T, TCollection, TBuilder, TCollector>(collector));
+      return collector.Value.Build(builder);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

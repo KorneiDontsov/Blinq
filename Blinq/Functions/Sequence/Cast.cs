@@ -1,11 +1,9 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
 
-struct CastUpFoldFunc<TFrom, TAccumulator, TTo, TInnerFoldFunc>: IFoldFunc<TFrom, TAccumulator>
+readonly struct CastUpFoldFunc<TFrom, TAccumulator, TTo, TInnerFoldFunc>: IFoldFunc<TFrom, TAccumulator>
 where TFrom: TTo
 where TInnerFoldFunc: IFoldFunc<TTo, TAccumulator> {
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public CastUpFoldFunc (TInnerFoldFunc innerFoldFunc) {
@@ -18,10 +16,10 @@ where TInnerFoldFunc: IFoldFunc<TTo, TAccumulator> {
    }
 }
 
-struct CastDownFoldFunc<TFrom, TAccumulator, TTo, TInnerFoldFunc>: IFoldFunc<TFrom, TAccumulator>
+readonly struct CastDownFoldFunc<TFrom, TAccumulator, TTo, TInnerFoldFunc>: IFoldFunc<TFrom, TAccumulator>
 where TTo: TFrom
 where TInnerFoldFunc: IFoldFunc<TTo, TAccumulator> {
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public CastDownFoldFunc (TInnerFoldFunc innerFoldFunc) {
@@ -66,6 +64,7 @@ where TFromIterator: IIterator<TFrom> {
    }
 }
 
+[ReadOnly(true)]
 public interface ICastType { }
 
 public static class CastType {
@@ -99,10 +98,7 @@ public static partial class Sequence {
    )
    where T: TTo
    where TIterator: IIterator<T> {
-      return new Sequence<TTo, CastUpIterator<TTo, T, TIterator>>(
-         new CastUpIterator<TTo, T, TIterator>(sequence.Iterator),
-         sequence.Count
-      );
+      return Sequence<TTo>.Create(new CastUpIterator<TTo, T, TIterator>(sequence.Iterator), sequence.Count);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -112,9 +108,6 @@ public static partial class Sequence {
    )
    where TIterator: IIterator<T>
    where TTo: T {
-      return new Sequence<TTo, CastDownIterator<TTo, T, TIterator>>(
-         new CastDownIterator<TTo, T, TIterator>(sequence.Iterator),
-         sequence.Count
-      );
+      return Sequence<TTo>.Create(new CastDownIterator<TTo, T, TIterator>(sequence.Iterator), sequence.Count);
    }
 }

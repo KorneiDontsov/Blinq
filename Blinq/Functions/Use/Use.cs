@@ -1,7 +1,7 @@
 namespace Blinq;
 
 public readonly partial struct Use<T> {
-   public static Use<T> Type { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default; }
+   public static Use<T> Here { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default; }
 }
 
 public readonly struct Use<TContract, T> where T: TContract {

@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
 
+[ReadOnly(true)]
 public interface IDictionaryAddFunc<TKey, TValue> {
    void Invoke (Dictionary<TKey, TValue> dictionary, TKey key, TValue value);
 }

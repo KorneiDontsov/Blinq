@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Blinq;
 
 public readonly struct ComparesPredicate<T, TCompareCondition, TComparer>: IPredicate<T>

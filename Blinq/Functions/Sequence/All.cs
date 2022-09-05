@@ -1,7 +1,7 @@
 namespace Blinq;
 
-struct AllFoldFunc<T, TPredicate>: IFoldFunc<T, bool> where TPredicate: IPredicate<T> {
-   TPredicate Predicate;
+readonly struct AllFoldFunc<T, TPredicate>: IFoldFunc<T, bool> where TPredicate: IPredicate<T> {
+   readonly TPredicate Predicate;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public AllFoldFunc (TPredicate predicate) {

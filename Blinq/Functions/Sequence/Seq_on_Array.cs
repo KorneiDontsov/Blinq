@@ -28,6 +28,6 @@ public static partial class Sequence {
    /// <summary>Creates a sequence over <paramref name="array" />.</summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, ArrayIterator<T>> Seq<T> (this T[] array) {
-      return new Sequence<T, ArrayIterator<T>>(new ArrayIterator<T>(array), array.Length);
+      return Sequence<T>.Create(new ArrayIterator<T>(array), array.Length);
    }
 }

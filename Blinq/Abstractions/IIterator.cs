@@ -1,9 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
 
 /// <seealso cref="IIterator{T}.Fold{TAccumulator, TFoldFunc}" />
 [SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]
+[ReadOnly(true)]
 public interface IFoldFunc<T, TAccumulator> {
    bool Invoke (T item, ref TAccumulator accumulator);
 }

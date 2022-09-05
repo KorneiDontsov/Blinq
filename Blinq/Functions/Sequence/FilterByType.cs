@@ -1,8 +1,8 @@
 namespace Blinq;
 
-struct FilterByTypeFoldFunc<TFrom, TAccumulator, TTo, TInnerFoldFunc>: IFoldFunc<TFrom, TAccumulator>
+readonly struct FilterByTypeFoldFunc<TFrom, TAccumulator, TTo, TInnerFoldFunc>: IFoldFunc<TFrom, TAccumulator>
 where TInnerFoldFunc: IFoldFunc<TTo, TAccumulator> {
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public FilterByTypeFoldFunc (TInnerFoldFunc innerFoldFunc) {
@@ -32,6 +32,7 @@ where TFromIterator: IIterator<TFrom> {
 }
 
 public readonly partial struct FilterContinuation<T, TIterator> {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public Sequence<TTo, FilterByTypeIterator<TTo, T, TIterator>> ByType<TTo> () where TTo: T {
       return new FilterByTypeIterator<TTo, T, TIterator>(Sequence.Iterator);
    }

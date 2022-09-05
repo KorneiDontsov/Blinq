@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
 
 readonly struct LastFoldFunc<T>: IFoldFunc<T, Option<T>> {

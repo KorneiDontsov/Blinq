@@ -1,10 +1,10 @@
 namespace Blinq;
 
-struct WhereFoldFunc<T, TAccumulator, TPredicate, TInnerFoldFunc>: IFoldFunc<T, TAccumulator>
+readonly struct WhereFoldFunc<T, TAccumulator, TPredicate, TInnerFoldFunc>: IFoldFunc<T, TAccumulator>
 where TPredicate: IPredicate<T>
 where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
-   TPredicate Predicate;
-   TInnerFoldFunc InnerFoldFunc;
+   readonly TPredicate Predicate;
+   readonly TInnerFoldFunc InnerFoldFunc;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public WhereFoldFunc (TPredicate predicate, TInnerFoldFunc innerFoldFunc) {

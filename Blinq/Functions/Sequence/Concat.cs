@@ -37,7 +37,6 @@ public static partial class Sequence {
          ((true, var count1), (true, var count2)) when int.MaxValue - count1 >= count2 => Option.Value(count1 + count2),
          _ => Option.None,
       };
-      var iterator = new ConcatIterator<T, TIterator1, TIterator2>(sequence1.Iterator, sequence2.Iterator);
-      return new Sequence<T, ConcatIterator<T, TIterator1, TIterator2>>(iterator, count);
+      return Sequence<T>.Create(new ConcatIterator<T, TIterator1, TIterator2>(sequence1.Iterator, sequence2.Iterator), count);
    }
 }

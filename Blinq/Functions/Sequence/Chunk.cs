@@ -1,8 +1,8 @@
 namespace Blinq;
 
-struct ChunkFoldFunc<T, TCollection, TBuilder, TCollector>: IFoldFunc<T, (TBuilder builder, int countLeft)>
+readonly struct ChunkFoldFunc<T, TCollection, TBuilder, TCollector>: IFoldFunc<T, (TBuilder builder, int countLeft)>
 where TCollector: ICollector<T, TCollection, TBuilder> {
-   TCollector Collector;
+   readonly TCollector Collector;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ChunkFoldFunc (TCollector collector) {
@@ -21,7 +21,7 @@ where TCollector: ICollector<T, TCollection, TBuilder>
 where TIterator: IIterator<T> {
    TIterator Iterator;
    readonly int Size;
-   TCollector Collector;
+   readonly TCollector Collector;
    bool Completed;
 
    public ChunkIterator (TIterator iterator, int size, TCollector collector) {
@@ -52,18 +52,18 @@ public static partial class Sequence {
       Chunk<T, TIterator, TBuilder, TCollection, TCollector> (
          this in Sequence<T, TIterator> sequence,
          int size,
-         Use<ICollector<T, TCollection, TBuilder>, TCollector> collectorUse
+         Use<ICollector<T, TCollection, TBuilder>, TCollector> collector
       )
    where TIterator: IIterator<T>
    where TCollector: ICollector<T, TCollection, TBuilder> {
       if (size <= 0) throw new ArgumentOutOfRangeException(nameof(size), size, null);
 
-      var count = sequence.Count switch {
-         (true, var inputCount) when System.Math.DivRem(inputCount, size, out var remainder) is var c => Option.Value(remainder is 0 ? c : c + 1),
+      var newCount = sequence.Count switch {
+         (true, var count) when System.Math.DivRem(count, size, out var rem) is var div => Option.Value(rem > 0 ? div + 1 : div),
          _ => Option.None,
       };
-      var iterator = new ChunkIterator<TCollection, TBuilder, TCollector, T, TIterator>(sequence.Iterator, size, collectorUse.Value);
-      return new Sequence<TCollection, ChunkIterator<TCollection, TBuilder, TCollector, T, TIterator>>(iterator, count);
+      var iterator = new ChunkIterator<TCollection, TBuilder, TCollector, T, TIterator>(sequence.Iterator, size, collector.Value);
+      return Sequence<TCollection>.Create(iterator, newCount);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

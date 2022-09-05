@@ -1,9 +1,7 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
 
 [SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]
+[ReadOnly(true)]
 public interface ICollector<T, TCollection, TBuilder> {
    TBuilder CreateBuilder ();
    void Add (ref TBuilder builder, T item);

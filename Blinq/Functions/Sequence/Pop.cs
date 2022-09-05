@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
 
 readonly struct PopFoldFunc<T>: IFoldFunc<T, Option<T>> {
@@ -11,7 +9,7 @@ readonly struct PopFoldFunc<T>: IFoldFunc<T, Option<T>> {
    }
 }
 
-static partial class Sequence<T> {
+public static partial class Sequence<T> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Option<T> Pop<TIterator> (ref TIterator iterator) where TIterator: IIterator<T> {
       return iterator.Fold(Option<T>.None, new PopFoldFunc<T>());
@@ -31,7 +29,7 @@ public static partial class Sequence {
             (true, var count) => Option.Value(count - 1),
             _ => Option.None,
          };
-         sequence = new Sequence<T, TIterator>(iterator, newCount);
+         sequence = Sequence<T>.Create(iterator, newCount);
       }
 
       return next;

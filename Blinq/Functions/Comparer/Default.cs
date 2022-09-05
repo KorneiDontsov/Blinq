@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Blinq;
 
 public readonly struct DefaultComparer<T>: IComparer<T> {

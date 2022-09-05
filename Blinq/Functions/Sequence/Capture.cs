@@ -61,9 +61,6 @@ public static partial class Sequence {
       this in Sequence<T, TIterator> sequence,
       TCapture capture
    ) where TIterator: IIterator<T> {
-      return new Sequence<ItemWithCapture<T, TCapture>, CaptureIterator<T, TCapture, TIterator>>(
-         new CaptureIterator<T, TCapture, TIterator>(sequence.Iterator, capture),
-         sequence.Count
-      );
+      return Sequence<ItemWithCapture<T, TCapture>>.Create(new CaptureIterator<T, TCapture, TIterator>(sequence.Iterator, capture), sequence.Count);
    }
 }

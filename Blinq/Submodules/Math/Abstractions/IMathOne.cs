@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq.Math;
 
 [SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]

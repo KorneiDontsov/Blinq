@@ -40,7 +40,7 @@ public readonly struct Sequence<T, TIterator> where TIterator: IIterator<T> {
    }
 }
 
-static partial class Sequence<T> { }
+public static partial class Sequence<T> { }
 
 /// <summary>
 ///    Provides high-performance allocation-free alternatives of "LINQ to objects" methods.

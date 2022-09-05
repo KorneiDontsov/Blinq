@@ -1,12 +1,9 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Blinq;
 
 /// <inheritdoc />
 /// <summary>An <see cref="IEnumerator{T}" /> to <see cref="IIterator{T}" /> adapter.</summary>
 [SuppressMessage("ReSharper", "StructCanBeMadeReadOnly")]
-public struct EnumeratorIterator<T>: IIterator<T> {
+public readonly struct EnumeratorIterator<T>: IIterator<T> {
    readonly IEnumerator<T> Enumerator;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -26,7 +23,7 @@ public struct EnumeratorIterator<T>: IIterator<T> {
 [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
 public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   static Option<int> GetCountOrDefault<T> (IEnumerable<T> enumerable) {
+   static Option<int> GetCount<T> (IEnumerable<T> enumerable) {
       return enumerable switch {
          ICollection<T> collection => collection.Count,
          IReadOnlyCollection<T> collection => collection.Count,
@@ -41,8 +38,8 @@ public static partial class Sequence {
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, EnumeratorIterator<T>> Seq<T> (this IEnumerable<T> enumerable) {
-      var count = GetCountOrDefault(enumerable);
-      return new Sequence<T, EnumeratorIterator<T>>(new EnumeratorIterator<T>(enumerable.GetEnumerator()), count);
+      var count = GetCount(enumerable);
+      return Sequence<T>.Create(new EnumeratorIterator<T>(enumerable.GetEnumerator()), count);
    }
 
    /// <summary>
@@ -52,9 +49,9 @@ public static partial class Sequence {
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static void Seq<T> (this IEnumerable<T> enumerable, Action<Sequence<T, EnumeratorIterator<T>>> action) {
-      var count = GetCountOrDefault(enumerable);
+      var count = GetCount(enumerable);
       using var enumerator = enumerable.GetEnumerator();
-      var sequence = new Sequence<T, EnumeratorIterator<T>>(new EnumeratorIterator<T>(enumerator), count);
+      var sequence = Sequence<T>.Create(new EnumeratorIterator<T>(enumerator), count);
       action(sequence);
    }
 
@@ -65,9 +62,9 @@ public static partial class Sequence {
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static TResult Seq<T, TResult> (this IEnumerable<T> enumerable, Func<Sequence<T, EnumeratorIterator<T>>, TResult> func) {
-      var count = GetCountOrDefault(enumerable);
+      var count = GetCount(enumerable);
       using var enumerator = enumerable.GetEnumerator();
-      var sequence = new Sequence<T, EnumeratorIterator<T>>(new EnumeratorIterator<T>(enumerator), count);
+      var sequence = Sequence<T>.Create(new EnumeratorIterator<T>(enumerator), count);
       return func(sequence);
    }
 }

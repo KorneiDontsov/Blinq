@@ -1,7 +1,6 @@
-using System.Collections.Generic;
-
 namespace Blinq;
 
+[ReadOnly(true)]
 public interface ICompareCondition {
    bool Invoke (int compareResult);
 }

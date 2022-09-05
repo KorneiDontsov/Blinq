@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Blinq;
 
 public readonly struct SimpleCollector<T, TCollection>: ICollector<T, TCollection, TCollection> where TCollection: ICollection<T>, new() {

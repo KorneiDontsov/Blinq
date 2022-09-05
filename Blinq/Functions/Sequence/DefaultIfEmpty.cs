@@ -50,13 +50,10 @@ public static partial class Sequence {
       this in Sequence<T, TIterator> sequence,
       T defaultValue = default!
    ) where TIterator: IIterator<T> {
-      return new Sequence<T, DefaultIfEmptyIterator<T, TIterator>>(
-         new DefaultIfEmptyIterator<T, TIterator>(sequence.Iterator, defaultValue),
-         sequence.Count switch {
-            (true, 0) => Option.Value(1),
-            (true, var count) => Option.Value(count),
-            _ => Option.None,
-         }
-      );
+      var count = sequence.Count switch {
+         (true, 0) => Option.Value(1),
+         _ => sequence.Count,
+      };
+      return Sequence<T>.Create(new DefaultIfEmptyIterator<T, TIterator>(sequence.Iterator, defaultValue), count);
    }
 }
