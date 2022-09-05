@@ -4,21 +4,21 @@ public readonly partial struct Use<T> {
    public static Use<T> Here { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default; }
 }
 
-public readonly struct Use<TContract, T> where T: TContract {
-   public readonly T Value;
+public readonly struct Use<TContract, TValue> where TValue: TContract {
+   public readonly TValue Value;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public Use (T value) {
+   public Use (TValue value) {
       Value = value;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static implicit operator Use<TContract, T> (T value) {
-      return new Use<TContract, T>(value);
+   public static implicit operator Use<TContract, TValue> (TValue value) {
+      return new Use<TContract, TValue>(value);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static implicit operator T (Use<TContract, T> use) {
+   public static implicit operator TValue (Use<TContract, TValue> use) {
       return use.Value;
    }
 }
