@@ -29,6 +29,12 @@ public readonly struct Option<T> {
       HasValue = true;
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void Deconstruct (out bool hasValue, out T valueOrDefault) {
+      hasValue = HasValue;
+      valueOrDefault = ValueOrDefault!;
+   }
+
    /// <summary>An <see cref="Option{T}" /> without value.</summary>
    public static Option<T> None { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default; }
 

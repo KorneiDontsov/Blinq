@@ -1,3 +1,5 @@
+using Blinq.Functors;
+
 namespace Blinq;
 
 readonly struct AllFoldFunc<T, TPredicate>: IFoldFunc<T, bool> where TPredicate: IPredicate<T> {

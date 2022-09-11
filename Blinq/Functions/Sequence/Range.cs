@@ -35,7 +35,7 @@ public struct RangeIterator<T, TMath>: IIterator<T> where TMath: IMathOne<T>, IM
 public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, RangeIterator<T, TMath>> Range<T, TMath> (T start, int count, TMath math) where TMath: IMathOne<T>, IMathAdd<T> {
-      if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), count, null);
+      if (count < 0) Utils.Throw<ArgumentOutOfRangeException>();
 
       return Sequence<T>.Create(new RangeIterator<T, TMath>(start, count, math), count);
    }

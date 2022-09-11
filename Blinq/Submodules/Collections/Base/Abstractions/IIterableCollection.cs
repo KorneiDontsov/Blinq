@@ -20,21 +20,16 @@ public interface IIterableCollection<T, TIterator>: IIterable<T, TIterator>, IRe
       return GetEnumerator();
    }
 
-   bool Contains<TEqualer> (T item, TEqualer equaler) where TEqualer: IEqualityComparer<T>;
-
-   bool ICollection<T>.Contains (T item) {
-      return Contains(item, Equaler.Default<T>());
-   }
-
    void ICollection<T>.Add (T item) {
-      throw new NotSupportedException();
+      Utils.Throw<NotSupportedException>();
    }
 
    bool ICollection<T>.Remove (T item) {
-      throw new NotSupportedException();
+      Utils.Throw<NotSupportedException>();
+      return default;
    }
 
    void ICollection<T>.Clear () {
-      throw new NotSupportedException();
+      Utils.Throw<NotSupportedException>();
    }
 }

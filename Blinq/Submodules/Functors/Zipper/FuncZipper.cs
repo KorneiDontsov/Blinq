@@ -1,4 +1,4 @@
-namespace Blinq;
+namespace Blinq.Functors;
 
 public readonly struct FuncZipper<TIn1, TIn2, TOut>: IZipper<TIn1, TIn2, TOut> {
    readonly Func<TIn1, TIn2, TOut> Func;

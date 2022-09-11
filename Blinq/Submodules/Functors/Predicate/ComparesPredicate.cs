@@ -1,4 +1,4 @@
-namespace Blinq;
+namespace Blinq.Functors;
 
 public readonly struct ComparesPredicate<T, TCompareCondition, TComparer>: IPredicate<T>
 where TCompareCondition: ICompareCondition

@@ -1,3 +1,5 @@
+using Blinq.Functors;
+
 namespace Blinq;
 
 public static partial class Sequence {

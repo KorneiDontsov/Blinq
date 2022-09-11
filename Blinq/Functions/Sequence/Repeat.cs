@@ -24,7 +24,7 @@ public struct RepeatIterator<T>: IIterator<T> {
 public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, RepeatIterator<T>> Repeat<T> (T item, int count) {
-      if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), count, null);
+      if (count < 0) Utils.Throw<ArgumentOutOfRangeException>();
       return Sequence<T>.Create(new RepeatIterator<T>(item, count), count);
    }
 }

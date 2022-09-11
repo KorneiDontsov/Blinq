@@ -18,14 +18,18 @@ where TIterator: IIterator<T> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TCollection, TAccumulator> {
       while (!Completed) {
-         var builder = Collector.CreateBuilder();
-         var collectFoldFunc = new CollectFoldFunc<T, TCollection, TBuilder, TCollector>(Collector);
-         var takeFoldFunc = new TakeFoldFunc<T, TBuilder, CollectFoldFunc<T, TCollection, TBuilder, TCollector>>(collectFoldFunc);
-         (builder, var countLeft) = Iterator.Fold((builder, Size), takeFoldFunc);
-         var collection = Collector.Build(builder);
+         var builder = Collector.CreateBuilder(Size);
+         try {
+            var collectFoldFunc = new CollectFoldFunc<T, TCollection, TBuilder, TCollector>(Collector);
+            var takeFoldFunc = new TakeFoldFunc<T, TBuilder, CollectFoldFunc<T, TCollection, TBuilder, TCollector>>(collectFoldFunc);
+            (builder, var countLeft) = Iterator.Fold((builder, Size), takeFoldFunc);
+            var collection = Collector.Build(ref builder);
 
-         Completed = countLeft > 0;
-         if (func.Invoke(collection, ref seed)) break;
+            Completed = countLeft > 0;
+            if (func.Invoke(collection, ref seed)) break;
+         } finally {
+            Collector.Finalize(ref builder);
+         }
       }
 
       return seed;
@@ -42,7 +46,7 @@ public static partial class Sequence {
       )
    where TIterator: IIterator<T>
    where TCollector: ICollector<T, TCollection, TBuilder> {
-      if (size <= 0) throw new ArgumentOutOfRangeException(nameof(size), size, null);
+      if (size <= 0) Utils.Throw<ArgumentOutOfRangeException>();
 
       var newCount = sequence.Count switch {
          (true, var count) when System.Math.DivRem(count, size, out var rem) is var div => Option.Value(rem > 0 ? div + 1 : div),

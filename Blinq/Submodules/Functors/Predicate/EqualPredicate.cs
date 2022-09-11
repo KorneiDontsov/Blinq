@@ -1,4 +1,4 @@
-namespace Blinq;
+namespace Blinq.Functors;
 
 public readonly struct EqualPredicate<T, TEqualer>: IPredicate<T> where TEqualer: IEqualityComparer<T> {
    readonly T Value;

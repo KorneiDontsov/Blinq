@@ -1,4 +1,4 @@
-namespace Blinq;
+namespace Blinq.Functors;
 
 public readonly struct ItselfSelector<T>: ISelector<T, T> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

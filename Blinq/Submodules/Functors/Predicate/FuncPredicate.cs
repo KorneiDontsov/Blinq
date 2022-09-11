@@ -1,4 +1,4 @@
-namespace Blinq;
+namespace Blinq.Functors;
 
 public readonly struct FuncPredicate<T>: IPredicate<T> {
    readonly Func<T, bool> Func;

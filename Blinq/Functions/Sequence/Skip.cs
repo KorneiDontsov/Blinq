@@ -33,7 +33,7 @@ public struct SkipIterator<T, TIterator>: IIterator<T> where TIterator: IIterato
 public static partial class Sequence {
    public static Sequence<T, SkipIterator<T, TIterator>> Skip<T, TIterator> (this in Sequence<T, TIterator> sequence, int count)
    where TIterator: IIterator<T> {
-      if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), count, null);
+      if (count < 0) Utils.Throw<ArgumentOutOfRangeException>();
 
       var newCount = sequence.Count switch {
          (true, var beginCount) => Option.Value(System.Math.Max(0, beginCount - count)),

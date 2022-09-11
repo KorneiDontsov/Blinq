@@ -1,3 +1,5 @@
+using Blinq.Functors;
+
 namespace Blinq;
 
 readonly struct WhereFoldFunc<T, TAccumulator, TPredicate, TInnerFoldFunc>: IFoldFunc<T, TAccumulator>

@@ -1,4 +1,4 @@
-namespace Blinq;
+namespace Blinq.Functors;
 
 public readonly struct FuncSelector<TIn, TOut>: ISelector<TIn, TOut> {
    readonly Func<TIn, TOut> Func;

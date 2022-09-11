@@ -1,3 +1,5 @@
+using Blinq.Functors;
+
 namespace Blinq;
 
 readonly struct ZipFoldFunc<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TInnerFoldFunc>:

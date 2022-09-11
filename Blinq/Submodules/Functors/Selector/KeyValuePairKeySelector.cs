@@ -1,4 +1,4 @@
-namespace Blinq;
+namespace Blinq.Functors;
 
 public readonly struct KeyValuePairKeySelector<TKey, TValue>: ISelector<KeyValuePair<TKey, TValue>, TKey> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

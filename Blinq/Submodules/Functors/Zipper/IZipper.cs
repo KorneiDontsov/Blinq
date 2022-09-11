@@ -1,4 +1,4 @@
-namespace Blinq;
+namespace Blinq.Functors;
 
 [SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]
 public interface IZipper<TIn1, TIn2, TOut> {

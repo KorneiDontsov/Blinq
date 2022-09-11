@@ -3,19 +3,14 @@ namespace Blinq;
 [SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]
 [ReadOnly(true)]
 public interface ICollector<T, TCollection, TBuilder> {
-   TBuilder CreateBuilder ();
+   TBuilder CreateBuilder (int expectedCapacity = 0);
    void Add (ref TBuilder builder, T item);
-   TCollection Build (in TBuilder builder);
+   TCollection Build (ref TBuilder builder);
+   void Finalize (ref TBuilder builder);
 }
 
 [SuppressMessage("ReSharper", "UnusedTypeParameter")]
-public readonly struct CollectorProvider<T> {
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public Use<ICollector<T, TCollection, TCollection>, SimpleCollector<T, TCollection>> Collection<TCollection> ()
-   where TCollection: ICollection<T>, new() {
-      return new SimpleCollector<T, TCollection>();
-   }
-}
+public readonly struct CollectorProvider<T> { }
 
 public delegate Use<ICollector<T, TCollection, TBuilder>, TCollector> ProvideCollector<T, TCollection, TBuilder, TCollector> (
    CollectorProvider<T> collectorProvider

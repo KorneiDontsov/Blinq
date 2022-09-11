@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace ResearchBenchmarks.FasterSequence;
 
 [SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]

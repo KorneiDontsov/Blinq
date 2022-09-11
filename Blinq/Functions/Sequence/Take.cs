@@ -40,7 +40,7 @@ public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Sequence<T, TakeIterator<T, TIterator>> Take<T, TIterator> (this in Sequence<T, TIterator> sequence, int count)
    where TIterator: IIterator<T> {
-      if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), count, null);
+      if (count < 0) Utils.Throw<ArgumentOutOfRangeException>();
 
       return Sequence<T>.Create(new TakeIterator<T, TIterator>(sequence.Iterator, count), count);
    }

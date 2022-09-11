@@ -23,7 +23,7 @@ sealed class IteratorEnumerator<T, TIterator>: IEnumerator<T> where TIterator: I
    public void Dispose () { }
 
    public void Reset () {
-      throw new NotSupportedException();
+      Utils.Throw<NotSupportedException>();
    }
 }
 

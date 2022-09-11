@@ -24,8 +24,13 @@ public static partial class Sequence {
    )
    where TIterator: IIterator<T>
    where TCollector: ICollector<T, TCollection, TBuilder> {
-      var builder = sequence.Iterator.Fold(collector.Value.CreateBuilder(), new CollectFoldFunc<T, TCollection, TBuilder, TCollector>(collector));
-      return collector.Value.Build(builder);
+      var builder = collector.Value.CreateBuilder(sequence.Count.OrDefault());
+      try {
+         builder = sequence.Iterator.Fold(builder, new CollectFoldFunc<T, TCollection, TBuilder, TCollector>(collector));
+         return collector.Value.Build(ref builder);
+      } finally {
+         collector.Value.Finalize(ref builder);
+      }
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

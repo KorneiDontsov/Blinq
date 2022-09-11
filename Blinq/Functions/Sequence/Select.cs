@@ -1,3 +1,5 @@
+using Blinq.Functors;
+
 namespace Blinq;
 
 readonly struct SelectFoldFunc<TIn, TAccumulator, TOut, TSelector, TInnerFoldFunc>: IFoldFunc<TIn, TAccumulator>

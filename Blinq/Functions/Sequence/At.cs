@@ -31,7 +31,7 @@ readonly struct AtFromEndFoldFunc<T>: IFoldFunc<T, ValueTuple> {
 public static partial class Sequence {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Option<T> At<T, TIterator> (this in Sequence<T, TIterator> sequence, int index) where TIterator: IIterator<T> {
-      if (index < 0) throw new ArgumentOutOfRangeException(nameof(index), index, null);
+      if (index < 0) Utils.Throw<ArgumentOutOfRangeException>();
       return sequence.Iterator.Fold((result: Option<T>.None, countLeft: index), new AtFoldFunc<T>()).result;
    }
 

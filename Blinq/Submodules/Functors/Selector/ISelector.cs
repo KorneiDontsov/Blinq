@@ -1,4 +1,4 @@
-namespace Blinq;
+namespace Blinq.Functors;
 
 [SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]
 [ReadOnly(true)]

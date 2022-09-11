@@ -1,3 +1,5 @@
+using Blinq.Functors;
+
 namespace Blinq;
 
 [ReadOnly(true)]
@@ -63,20 +65,22 @@ where TAddFunc: IDictionaryAddFunc<TKey, TValue> {
       Equaler = equaler;
    }
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public readonly Dictionary<TKey, TValue> CreateBuilder () {
-      return new Dictionary<TKey, TValue>(Equaler);
+   public Dictionary<TKey, TValue> CreateBuilder (int expectedCapacity = 0) {
+      return new Dictionary<TKey, TValue>(expectedCapacity, Equaler);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public void Add (ref Dictionary<TKey, TValue> builder, T item) {
-      AddFunc.Invoke(builder, KeySelector.Invoke(item), ValueSelector.Invoke(item));
+   public void Add (ref Dictionary<TKey, TValue> dictionary, T item) {
+      AddFunc.Invoke(dictionary, KeySelector.Invoke(item), ValueSelector.Invoke(item));
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public readonly Dictionary<TKey, TValue> Build (in Dictionary<TKey, TValue> builder) {
-      return builder;
+   public readonly Dictionary<TKey, TValue> Build (ref Dictionary<TKey, TValue> dictionary) {
+      return dictionary;
    }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void Finalize (ref Dictionary<TKey, TValue> builder) { }
 }
 
 public static partial class Collector {
