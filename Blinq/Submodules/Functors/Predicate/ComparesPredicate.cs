@@ -1,21 +1,19 @@
 namespace Blinq.Functors;
 
-public readonly struct ComparesPredicate<T, TCompareCondition, TComparer>: IPredicate<T>
-where TCompareCondition: ICompareCondition
-where TComparer: IComparer<T> {
+public readonly struct ComparesPredicate<T, TComparer, TCondition>: IPredicate<T>
+where TComparer: IComparer<T>
+where TCondition: ICompareCondition {
    readonly T Value;
-   readonly TCompareCondition CompareCondition;
    readonly TComparer Comparer;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public ComparesPredicate (T value, TCompareCondition compareCondition, TComparer comparer) {
+   public ComparesPredicate (T value, TComparer comparer) {
       Value = value;
-      CompareCondition = compareCondition;
       Comparer = comparer;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item) {
-      return item.Compares(Value, CompareCondition, Comparer);
+      return item.Compares(Value, Comparer, Get.Type<TCondition>());
    }
 }

@@ -21,15 +21,15 @@ public interface IIterableCollection<T, TIterator>: IIterable<T, TIterator>, IRe
    }
 
    void ICollection<T>.Add (T item) {
-      Utils.Throw<NotSupportedException>();
+      Get.Throw<NotSupportedException>();
    }
 
    bool ICollection<T>.Remove (T item) {
-      Utils.Throw<NotSupportedException>();
+      Get.Throw<NotSupportedException>();
       return default;
    }
 
    void ICollection<T>.Clear () {
-      Utils.Throw<NotSupportedException>();
+      Get.Throw<NotSupportedException>();
    }
 }

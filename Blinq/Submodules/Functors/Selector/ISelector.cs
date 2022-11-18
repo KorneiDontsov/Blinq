@@ -1,7 +1,6 @@
 namespace Blinq.Functors;
 
-[SuppressMessage("ReSharper", "TypeParameterCanBeVariant")]
 [ReadOnly(true)]
 public interface ISelector<TIn, TOut> {
-   TOut Invoke (TIn item);
+   [Pure] TOut Invoke (TIn item);
 }
