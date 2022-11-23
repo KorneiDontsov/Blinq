@@ -12,7 +12,7 @@ where TCondition: ICompareCondition {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref T accumulator) {
-      if (item.Compares(accumulator, Comparer, Get.Type<TCondition>())) {
+      if (item.Compares(accumulator, Comparer, Get<TCondition>.Type)) {
          accumulator = item;
       }
 

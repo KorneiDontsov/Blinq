@@ -14,6 +14,6 @@ where TCondition: ICompareCondition {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item) {
-      return item.Compares(Value, Comparer, Get.Type<TCondition>());
+      return item.Compares(Value, Comparer, Get<TCondition>.Type);
    }
 }

@@ -31,11 +31,11 @@ public static partial class Sequence {
    /// </exception>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int Count<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
-      return sequence.Count(Get.Type<int>());
+      return sequence.Count(Get<int>.Type);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static long LongCount<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
-      return sequence.Count(Get.Type<long>());
+      return sequence.Count(Get<long>.Type);
    }
 }
