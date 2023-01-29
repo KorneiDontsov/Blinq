@@ -3,12 +3,14 @@
         <Optimize Condition="'$(Configuration)'!='Debug'" />
         <LangVersion>11.0</LangVersion>
         <Nullable>enable</Nullable>
+        <NoWarn>CS8524</NoWarn> <!-- Switch expression doesn't handle some values. -->
     </PropertyGroup>
 
     <ItemGroup>
         <Using Include="System" />
         <Using Include="System.ComponentModel" />
         <Using Include="System.Collections.Generic" />
+        <Using Include="System.Diagnostics" />
         <Using Include="System.Diagnostics.CodeAnalysis" />
         <Using Include="System.Diagnostics.Contracts" />
         <Using Include="System.Runtime.CompilerServices" />
