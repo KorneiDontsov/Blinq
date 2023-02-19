@@ -1,47 +1,73 @@
 namespace Blinq;
 
-readonly struct TakeFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, (TAccumulator accumulator, int countLeft)>
-where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
-   readonly TInnerFoldFunc InnerFoldFunc;
+readonly struct TakeFold<T, TAccumulator, TInnerFold>: IFold<T, (TAccumulator accumulator, int countLeft)>
+where TInnerFold: IFold<T, TAccumulator> {
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TakeFoldFunc (TInnerFoldFunc innerFoldFunc) {
-      InnerFoldFunc = innerFoldFunc;
+   public TakeFold (TInnerFold innerFold) {
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref (TAccumulator accumulator, int countLeft) state) {
       --state.countLeft;
-      return InnerFoldFunc.Invoke(item, ref state.accumulator) || state.countLeft == 0;
+      return InnerFold.Invoke(item, ref state.accumulator) || state.countLeft == 0;
    }
 }
 
 public struct TakeIterator<T, TIterator>: IIterator<T> where TIterator: IIterator<T> {
    TIterator Iterator;
-   int Count;
+   int TakeCount;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TakeIterator (TIterator iterator, int count) {
+   public TakeIterator (TIterator iterator, int takeCount) {
       Iterator = iterator;
-      Count = count;
+      TakeCount = takeCount;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
-      if (Count > 0) {
-         (seed, Count) = Iterator.Fold((seed, Count), new TakeFoldFunc<T, TAccumulator, TFoldFunc>(func));
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      if (TakeCount > 0) {
+         --TakeCount;
+         return Iterator.TryPop(out item);
+      } else {
+         item = default;
+         return false;
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+      if (TakeCount > 0) {
+         (seed, TakeCount) = Iterator.Fold((seed, TakeCount), new TakeFold<T, TAccumulator, TFold>(fold));
       }
 
       return seed;
    }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      if (TakeCount == 0) {
+         count = 0;
+         return true;
+      } else if (Iterator.TryGetCount(out count)) {
+         if (count > TakeCount) count = TakeCount;
+         return true;
+      } else {
+         return false;
+      }
+   }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, TakeIterator<T, TIterator>> Take<T, TIterator> (this in Sequence<T, TIterator> sequence, int count)
+   public static Contract<IIterator<T>, TakeIterator<T, TIterator>> Take<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator, int count)
    where TIterator: IIterator<T> {
       if (count < 0) Get.Throw<ArgumentOutOfRangeException>();
-
-      return Sequence<T>.Create(new TakeIterator<T, TIterator>(sequence.Iterator, count), count);
+      return new TakeIterator<T, TIterator>(iterator, count);
    }
 }

@@ -31,6 +31,6 @@ public class SeqAsEnumerableBenchmarks {
 
    [Benchmark]
    public int Blinq_AsEnumerable_Sum () {
-      return Range.Seq().AsEnumerable().Sum();
+      return Range.Iter().AsEnumerable().Sum();
    }
 }

@@ -6,19 +6,38 @@ public struct VectorIterator<T>: IIterator<T> {
    int Index;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public VectorIterator (T[] items, int size) {
+   internal VectorIterator (T[] items, int size) {
       Items = items;
       Size = size;
    }
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      if (Index < Size) {
+         item = Items[Index++];
+         return true;
+      } else {
+         item = default;
+         return false;
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
       foreach (var item in Items.AsSpan(Index, Size)) {
          ++Index;
-         if (func.Invoke(item, ref seed)) break;
+         if (fold.Invoke(item, ref seed)) break;
       }
 
       return seed;
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      count = Size - Index;
+      return true;
    }
 }

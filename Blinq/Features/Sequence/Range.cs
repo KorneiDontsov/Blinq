@@ -2,42 +2,55 @@ using System.Numerics;
 
 namespace Blinq;
 
-public struct RangeIterator<T>: IIterator<T>
-where T: INumberBase<T> {
+public struct RangeIterator<T>: IIterator<T> where T: IIncrementOperators<T> {
    T Current;
-   int CountLeft;
-   bool Started;
+   int Count;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public RangeIterator (T start, int count) {
       if (count < 0) Get.Throw<ArgumentOutOfRangeException>();
 
       Current = start;
-      CountLeft = count;
-      Started = count == 0;
+      Count = count;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
-      if (!Started) {
-         Started = true;
-         if (func.Invoke(Current, ref seed)) return seed;
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      if (Count > 0) {
+         --Count;
+         item = Current++;
+         return true;
+      } else {
+         item = default;
+         return false;
       }
+   }
 
-      while (--CountLeft > 0) {
-         ++Current;
-         if (func.Invoke(Current, ref seed)) return seed;
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+      while (Count > 0) {
+         --Count;
+         if (fold.Invoke(Current++, ref seed)) break;
       }
 
       return seed;
    }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      count = Count;
+      return true;
+   }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, RangeIterator<T>> Range<T, TCount> (T start, int count)
-   where T: INumberBase<T>
+   public static Contract<IIterator<T>, RangeIterator<T>> Range<T, TCount> (T start, int count)
+   where T: IIncrementOperators<T>
    where TCount: INumberBase<TCount> {
-      return Sequence<T>.Create(new RangeIterator<T>(start, count), count);
+      return new RangeIterator<T>(start, count);
    }
 }

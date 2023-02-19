@@ -1,19 +1,19 @@
 namespace Blinq;
 
-readonly struct InspectFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, TAccumulator> where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
+readonly struct InspectFold<T, TAccumulator, TInnerFold>: IFold<T, TAccumulator> where TInnerFold: IFold<T, TAccumulator> {
    readonly Action<T> Action;
-   readonly TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public InspectFoldFunc (Action<T> action, TInnerFoldFunc innerFoldFunc) {
+   public InspectFold (Action<T> action, TInnerFold innerFold) {
       Action = action;
-      InnerFoldFunc = innerFoldFunc;
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref TAccumulator accumulator) {
       Action(item);
-      return InnerFoldFunc.Invoke(item, ref accumulator);
+      return InnerFold.Invoke(item, ref accumulator);
    }
 }
 
@@ -29,20 +29,41 @@ public struct InspectIterator<T, TIterator>: IIterator<T> where TIterator: IIter
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
-      return Iterator.Fold(seed, new InspectFoldFunc<T, TAccumulator, TFoldFunc>(Action, func));
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      if (Iterator.TryPop(out item)) {
+         Action(item);
+         return true;
+      } else {
+         item = default;
+         return false;
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+      return Iterator.Fold(seed, new InspectFold<T, TAccumulator, TFold>(Action, fold));
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      return Iterator.TryGetCount(out count);
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    /// <summary>Does something with each element of an iterator, passing the value on.</summary>
-   /// <param name="action">An action to be executed on each element of <paramref name="sequence" />.</param>
+   /// <param name="action">An action to be executed on each element of <paramref name="iterator" />.</param>
    /// <returns>
-   ///    A sequence that is equal to input <paramref name="sequence" /> but with <paramref name="action" /> to execute on each element.
+   ///    A sequence that is equal to input <paramref name="iterator" /> but with <paramref name="action" /> to execute on each element.
    /// </returns>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, InspectIterator<T, TIterator>> Inspect<T, TIterator> (this in Sequence<T, TIterator> sequence, Action<T> action)
+   public static Contract<IIterator<T>, InspectIterator<T, TIterator>> Inspect<T, TIterator> (
+      this in Contract<IIterator<T>, TIterator> iterator,
+      Action<T> action
+   )
    where TIterator: IIterator<T> {
-      return Sequence<T>.Create(new InspectIterator<T, TIterator>(sequence.Iterator, action), sequence.Count);
+      return new InspectIterator<T, TIterator>(iterator, action);
    }
 }

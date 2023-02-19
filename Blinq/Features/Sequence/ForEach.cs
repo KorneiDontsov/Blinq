@@ -1,10 +1,10 @@
 namespace Blinq;
 
-readonly struct ForEachFoldFunc<T>: IFoldFunc<T, ValueTuple> {
+readonly struct ForEachFold<T>: IFold<T, ValueTuple> {
    readonly Action<T> Action;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public ForEachFoldFunc (Action<T> action) {
+   public ForEachFold (Action<T> action) {
       Action = action;
    }
 
@@ -15,10 +15,10 @@ readonly struct ForEachFoldFunc<T>: IFoldFunc<T, ValueTuple> {
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    /// <summary>Executes an action to each element of a sequence.</summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static void ForEach<T, TIterator> (this in Sequence<T, TIterator> sequence, Action<T> action) where TIterator: IIterator<T> {
-      sequence.Iterator.Fold(default(ValueTuple), new ForEachFoldFunc<T>(action));
+   public static void ForEach<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator, Action<T> action) where TIterator: IIterator<T> {
+      iterator.Value.Fold(default(ValueTuple), new ForEachFold<T>(action));
    }
 }

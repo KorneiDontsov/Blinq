@@ -2,21 +2,37 @@ using Blinq.Functors;
 
 namespace Blinq;
 
-readonly struct FilterFoldFunc<TIn, TAccumulator, TOut, TSelector, TInnerFoldFunc>: IFoldFunc<TIn, TAccumulator>
+readonly struct FilterFold<TIn, TAccumulator, TOut, TSelector, TInnerFold>: IFold<TIn, TAccumulator>
 where TSelector: ISelector<TIn, Option<TOut>>
-where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
+where TInnerFold: IFold<TOut, TAccumulator> {
    readonly TSelector Selector;
-   readonly TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public FilterFoldFunc (TSelector selector, TInnerFoldFunc innerFoldFunc) {
+   public FilterFold (TSelector selector, TInnerFold innerFold) {
       Selector = selector;
-      InnerFoldFunc = innerFoldFunc;
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (TIn item, ref TAccumulator accumulator) {
-      return Selector.Invoke(item).Is(out var outItem) && InnerFoldFunc.Invoke(outItem, ref accumulator);
+      return Selector.Invoke(item).Is(out var outItem) && InnerFold.Invoke(outItem, ref accumulator);
+   }
+}
+
+readonly struct FilterPopFold<TIn, TOut, TSelector>: IFold<TIn, Option<TOut>>
+where TSelector: ISelector<TIn, Option<TOut>> {
+   readonly TSelector Selector;
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public FilterPopFold (TSelector selector) {
+      Selector = selector;
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Invoke (TIn item, ref Option<TOut> accumulator) {
+      accumulator = Selector.Invoke(item);
+      return accumulator.HasValue;
    }
 }
 
@@ -32,42 +48,58 @@ where TInIterator: IIterator<TIn> {
       Selector = selector;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TOut, TAccumulator> {
-      return InIterator.Fold(seed, new FilterFoldFunc<TIn, TAccumulator, TOut, TSelector, TFoldFunc>(Selector, func));
+   public bool TryPop ([MaybeNullWhen(false)] out TOut item) {
+      var result = InIterator.Fold(Option<TOut>.None, new FilterPopFold<TIn, TOut, TSelector>(Selector));
+      return result.Is(out item);
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TOut, TAccumulator> {
+      return InIterator.Fold(seed, new FilterFold<TIn, TAccumulator, TOut, TSelector, TFold>(Selector, fold));
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      count = default;
+      return false;
    }
 }
 
 public readonly partial struct FilterContinuation<T, TIterator> where TIterator: IIterator<T> {
-   readonly Sequence<T, TIterator> Sequence;
+   readonly TIterator Iterator;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public FilterContinuation (Sequence<T, TIterator> sequence) {
-      Sequence = sequence;
+   public FilterContinuation (TIterator iterator) {
+      Iterator = iterator;
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static FilterContinuation<T, TIterator> Filter<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
-      return new FilterContinuation<T, TIterator>(sequence);
+   public static FilterContinuation<T, TIterator> Filter<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator)
+   where TIterator: IIterator<T> {
+      return new FilterContinuation<T, TIterator>(iterator);
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TResult, FilterIterator<TResult, T, TSelector, TIterator>> Filter<T, TIterator, TResult, TSelector> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<TResult>, FilterIterator<TResult, T, TSelector, TIterator>> Filter<T, TIterator, TResult, TSelector> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       Contract<ISelector<T, Option<TResult>>, TSelector> selector
    )
    where TIterator: IIterator<T>
    where TSelector: ISelector<T, Option<TResult>> {
-      return new FilterIterator<TResult, T, TSelector, TIterator>(sequence.Iterator, selector);
+      return new FilterIterator<TResult, T, TSelector, TIterator>(iterator, selector);
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TResult, FilterIterator<TResult, T, FuncSelector<T, Option<TResult>>, TIterator>> Filter<T, TIterator, TResult> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<TResult>, FilterIterator<TResult, T, FuncSelector<T, Option<TResult>>, TIterator>> Filter<T, TIterator, TResult> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       Func<T, Option<TResult>> selector
    ) where TIterator: IIterator<T> {
-      return sequence.Filter(Get<ISelector<T, Option<TResult>>>.AsContract(new FuncSelector<T, Option<TResult>>(selector)));
+      return iterator.Filter(Get<ISelector<T, Option<TResult>>>.AsContract(new FuncSelector<T, Option<TResult>>(selector)));
    }
 }

@@ -15,40 +15,55 @@ where TIterator: IIterator<T> {
       Completed = false;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TCollection, TAccumulator> {
-      while (!Completed) {
-         var collector = ProvideCollector.Invoke().Value;
+   public bool TryPop ([MaybeNullWhen(false)] out TCollection item) {
+      if (Completed) {
+         item = default;
+         return false;
+      } else {
+         var collector = ProvideCollector().Value;
          collector.Capacity = Size;
-         var collectFoldFunc = new CollectFoldFunc<T, TCollection, TCollector>();
-         var takeFoldFunc = new TakeFoldFunc<T, TCollector, CollectFoldFunc<T, TCollection, TCollector>>(collectFoldFunc);
-         (collector, var countLeft) = Iterator.Fold((collector, Size), takeFoldFunc);
-         var collection = collector.Build();
-
+         var collectFold = new CollectFold<T, TCollection, TCollector>();
+         var takeThenCollectFold = new TakeFold<T, TCollector, CollectFold<T, TCollection, TCollector>>(collectFold);
+         (collector, var countLeft) = Iterator.Fold((collector, Size), takeThenCollectFold);
          Completed = countLeft > 0;
-         if (func.Invoke(collection, ref seed)) break;
+         item = collector.Build();
+         return true;
       }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TCollection, TAccumulator> {
+      while (TryPop(out var item) && !fold.Invoke(item, ref seed)) { }
 
       return seed;
    }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      if (Iterator.TryGetCount(out count)) {
+         var div = Math.DivRem(count, Size, out var rem);
+         count = rem > 0 ? div + 1 : div;
+         return true;
+      } else {
+         return false;
+      }
+   }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TCollection, ChunkIterator<T, TCollection, TCollector, TIterator>> Chunk<T, TIterator, TCollection, TCollector> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<TCollection>, ChunkIterator<T, TCollection, TCollector, TIterator>> Chunk<T, TIterator, TCollection, TCollector> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       int size,
       ProvideCollector<T, TCollection, TCollector> provideCollector
    )
    where TIterator: IIterator<T>
    where TCollector: ICollector<T, TCollection> {
       if (size <= 0) Get.Throw<ArgumentOutOfRangeException>();
-
-      var newCount = sequence.Count switch {
-         (true, var count) when System.Math.DivRem(count, size, out var rem) is var div => Option.Value(rem > 0 ? div + 1 : div),
-         _ => Option.None,
-      };
-      var iterator = new ChunkIterator<T, TCollection, TCollector, TIterator>(sequence.Iterator, size, provideCollector);
-      return Sequence<TCollection>.Create(iterator, newCount);
+      return new ChunkIterator<T, TCollection, TCollector, TIterator>(iterator, size, provideCollector);
    }
 }

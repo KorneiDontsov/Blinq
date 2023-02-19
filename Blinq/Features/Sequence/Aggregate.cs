@@ -1,10 +1,10 @@
 namespace Blinq;
 
-readonly struct AggregateFoldFunc<T, TAccumulator>: IFoldFunc<T, TAccumulator> {
+readonly struct AggregateFold<T, TAccumulator>: IFold<T, TAccumulator> {
    readonly Func<TAccumulator, T, TAccumulator> Func;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public AggregateFoldFunc (Func<TAccumulator, T, TAccumulator> func) {
+   public AggregateFold (Func<TAccumulator, T, TAccumulator> func) {
       Func = func;
    }
 
@@ -15,12 +15,12 @@ readonly struct AggregateFoldFunc<T, TAccumulator>: IFoldFunc<T, TAccumulator> {
    }
 }
 
-readonly struct AggregateToFoldFunc<T, TAccumulator>: IFoldFunc<T, ValueTuple> where TAccumulator: class {
+readonly struct AggregateToFold<T, TAccumulator>: IFold<T, ValueTuple> where TAccumulator: class {
    readonly Action<TAccumulator, T> Action;
    readonly TAccumulator Accumulator;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public AggregateToFoldFunc (Action<TAccumulator, T> action, TAccumulator accumulator) {
+   public AggregateToFold (Action<TAccumulator, T> action, TAccumulator accumulator) {
       Action = action;
       Accumulator = accumulator;
    }
@@ -32,17 +32,15 @@ readonly struct AggregateToFoldFunc<T, TAccumulator>: IFoldFunc<T, ValueTuple> w
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    /// <summary>Applies an accumulator function over a sequence.</summary>
    /// <param name="func">An accumulator function to be invoked on each element.</param>
    /// <returns>The final accumulator value or <see cref="Option{T}.None" /> if sequence is empty.</returns>
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Option<T> Aggregate<T, TIterator> (this in Sequence<T, TIterator> sequence, Func<T, T, T> func) where TIterator: IIterator<T> {
-      var iterator = sequence.Iterator;
-      return Sequence<T>.Pop(ref iterator) switch {
-         (true, var first) => Option.Value(iterator.Fold(first, new AggregateFoldFunc<T, T>(func))),
-         _ => Option.None,
-      };
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static Option<T> Aggregate<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator, Func<T, T, T> func)
+   where TIterator: IIterator<T> {
+      var iter = iterator.Value;
+      return iter.TryPop(out var first) ? Option.Value(iter.Fold(first, new AggregateFold<T, T>(func))) : Option.None;
    }
 
    /// <summary>
@@ -52,13 +50,13 @@ public static partial class Sequence {
    /// <param name="func">An accumulator function to be invoked on each element.</param>
    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
    /// <returns>The final accumulator value.</returns>
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static TAccumulator Aggregate<T, TIterator, TAccumulator> (
-      this in Sequence<T, TIterator> sequence,
+      this in Contract<IIterator<T>, TIterator> iterator,
       TAccumulator seed,
       Func<TAccumulator, T, TAccumulator> func
    ) where TIterator: IIterator<T> {
-      return sequence.Iterator.Fold(seed, new AggregateFoldFunc<T, TAccumulator>(func));
+      return iterator.Value.Fold(seed, new AggregateFold<T, TAccumulator>(func));
    }
 
    /// <summary>
@@ -68,15 +66,15 @@ public static partial class Sequence {
    /// <param name="action">An accumulator function to be invoked on each element.</param>
    /// <typeparam name="TAccumulator">The type of the accumulator object.</typeparam>
    /// <returns><paramref name="accumulator" /> itself.</returns>
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static TAccumulator AggregateTo<T, TIterator, TAccumulator> (
-      this in Sequence<T, TIterator> sequence,
+      this in Contract<IIterator<T>, TIterator> iterator,
       TAccumulator accumulator,
       Action<TAccumulator, T> action
    )
    where TIterator: IIterator<T>
    where TAccumulator: class {
-      sequence.Iterator.Fold(Option.None, new AggregateToFoldFunc<T, TAccumulator>(action, accumulator));
+      iterator.Value.Fold(Option.None, new AggregateToFold<T, TAccumulator>(action, accumulator));
       return accumulator;
    }
 }

@@ -1,17 +1,20 @@
 namespace Blinq;
 
-public static partial class Sequence {
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Option<T> Max<T, TIterator, TComparer> (this in Sequence<T, TIterator> sequence, TComparer comparer)
+public static partial class Iterator {
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static Option<T> Max<T, TIterator, TComparer> (this in Contract<IIterator<T>, TIterator> iterator, TComparer comparer)
    where TIterator: IIterator<T>
    where TComparer: IComparer<T> {
-      return sequence.Extreme(comparer, CompareCondition.Greater);
+      return iterator.Extreme(comparer, CompareCondition.Greater);
    }
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Option<T> Max<T, TIterator, TComparer> (this in Sequence<T, TIterator> sequence, ProvideComparer<T, TComparer> provideComparer)
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static Option<T> Max<T, TIterator, TComparer> (
+      this in Contract<IIterator<T>, TIterator> iterator,
+      ProvideComparer<T, TComparer> provideComparer
+   )
    where TIterator: IIterator<T>
    where TComparer: IComparer<T> {
-      return sequence.Max(provideComparer.Invoke());
+      return iterator.Max(provideComparer.Invoke());
    }
 }

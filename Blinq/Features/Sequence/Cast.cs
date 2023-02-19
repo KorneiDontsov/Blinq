@@ -1,34 +1,34 @@
 namespace Blinq;
 
-readonly struct CastUpFoldFunc<TFrom, TAccumulator, TTo, TInnerFoldFunc>: IFoldFunc<TFrom, TAccumulator>
+readonly struct CastUpFold<TFrom, TAccumulator, TTo, TInnerFold>: IFold<TFrom, TAccumulator>
 where TFrom: TTo
-where TInnerFoldFunc: IFoldFunc<TTo, TAccumulator> {
-   readonly TInnerFoldFunc InnerFoldFunc;
+where TInnerFold: IFold<TTo, TAccumulator> {
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public CastUpFoldFunc (TInnerFoldFunc innerFoldFunc) {
-      InnerFoldFunc = innerFoldFunc;
+   public CastUpFold (TInnerFold innerFold) {
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (TFrom item, ref TAccumulator accumulator) {
-      return InnerFoldFunc.Invoke(item, ref accumulator);
+      return InnerFold.Invoke(item, ref accumulator);
    }
 }
 
-readonly struct CastDownFoldFunc<TFrom, TAccumulator, TTo, TInnerFoldFunc>: IFoldFunc<TFrom, TAccumulator>
+readonly struct CastDownFold<TFrom, TAccumulator, TTo, TInnerFold>: IFold<TFrom, TAccumulator>
 where TTo: TFrom
-where TInnerFoldFunc: IFoldFunc<TTo, TAccumulator> {
-   readonly TInnerFoldFunc InnerFoldFunc;
+where TInnerFold: IFold<TTo, TAccumulator> {
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public CastDownFoldFunc (TInnerFoldFunc innerFoldFunc) {
-      InnerFoldFunc = innerFoldFunc;
+   public CastDownFold (TInnerFold innerFold) {
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (TFrom item, ref TAccumulator accumulator) {
-      return InnerFoldFunc.Invoke((TTo)item!, ref accumulator);
+      return InnerFold.Invoke((TTo)item!, ref accumulator);
    }
 }
 
@@ -42,9 +42,29 @@ where TFromIterator: IIterator<TFrom> {
       FromIterator = fromIterator;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TTo, TAccumulator> {
-      return FromIterator.Fold(seed, new CastUpFoldFunc<TFrom, TAccumulator, TTo, TFoldFunc>(func));
+   public bool TryPop ([MaybeNullWhen(false)] out TTo item) {
+      // TODO: Try to optimize: if (default(TFrom) is null) ... out Unsafe.As<TTo?, TFrom?>(ref item)
+      if (FromIterator.TryPop(out var actualItem)) {
+         item = actualItem;
+         return true;
+      } else {
+         item = default;
+         return false;
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TTo, TAccumulator> {
+      return FromIterator.Fold(seed, new CastUpFold<TFrom, TAccumulator, TTo, TFold>(fold));
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      return FromIterator.TryGetCount(out count);
    }
 }
 
@@ -58,9 +78,28 @@ where TFromIterator: IIterator<TFrom> {
       FromIterator = fromIterator;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TTo, TAccumulator> {
-      return FromIterator.Fold(seed, new CastDownFoldFunc<TFrom, TAccumulator, TTo, TFoldFunc>(func));
+   public bool TryPop ([MaybeNullWhen(false)] out TTo item) {
+      // TODO: Try to optimize: if (default(TTo) is null) ... out Unsafe.As<TTo?, TFrom?>(ref item)
+      if (FromIterator.TryPop(out var actualItem)) {
+         item = (TTo)actualItem!;
+         return true;
+      } else {
+         item = default;
+         return false;
+      }
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TTo, TAccumulator> {
+      return FromIterator.Fold(seed, new CastDownFold<TFrom, TAccumulator, TTo, TFold>(fold));
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      return FromIterator.TryGetCount(out count);
    }
 }
 
@@ -91,24 +130,26 @@ public readonly struct CastSyntaxInput<TFrom> {
 [Pure]
 public delegate CastSyntaxOutput<TFrom, TTo, TCastType> CastSyntax<TFrom, TTo, TCastType> (CastSyntaxInput<TFrom> input) where TCastType: ICastType;
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TTo, CastUpIterator<TTo, T, TIterator>> Cast<T, TIterator, TTo> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<TTo>, CastUpIterator<TTo, T, TIterator>> Cast<T, TIterator, TTo> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       CastSyntax<T, TTo, CastType.Up> syntax
    )
    where T: TTo
    where TIterator: IIterator<T> {
-      return Sequence<TTo>.Create(new CastUpIterator<TTo, T, TIterator>(sequence.Iterator), sequence.Count);
+      _ = syntax;
+      return new CastUpIterator<TTo, T, TIterator>(iterator);
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TTo, CastDownIterator<TTo, T, TIterator>> Cast<T, TIterator, TTo> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<TTo>, CastDownIterator<TTo, T, TIterator>> Cast<T, TIterator, TTo> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       CastSyntax<T, TTo, CastType.Down> syntax
    )
    where TIterator: IIterator<T>
    where TTo: T {
-      return Sequence<TTo>.Create(new CastDownIterator<TTo, T, TIterator>(sequence.Iterator), sequence.Count);
+      _ = syntax;
+      return new CastDownIterator<TTo, T, TIterator>(iterator);
    }
 }

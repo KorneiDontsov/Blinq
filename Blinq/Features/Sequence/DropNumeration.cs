@@ -1,17 +1,17 @@
 namespace Blinq;
 
-readonly struct DropNumerationFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<NumeratedItem<T>, TAccumulator>
-where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
-   readonly TInnerFoldFunc InnerFoldFunc;
+readonly struct DropNumerationFold<T, TAccumulator, TInnerFold>: IFold<NumeratedItem<T>, TAccumulator>
+where TInnerFold: IFold<T, TAccumulator> {
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public DropNumerationFoldFunc (TInnerFoldFunc innerFoldFunc) {
-      InnerFoldFunc = innerFoldFunc;
+   public DropNumerationFold (TInnerFold innerFold) {
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (NumeratedItem<T> item, ref TAccumulator accumulator) {
-      return InnerFoldFunc.Invoke(item.Value, ref accumulator);
+      return InnerFold.Invoke(item.Value, ref accumulator);
    }
 }
 
@@ -25,19 +25,37 @@ public struct DropNumerationIterator<T, TIterator>: IIterator<T> where TIterator
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
-      return Iterator.Fold(seed, new DropNumerationFoldFunc<T, TAccumulator, TFoldFunc>(func));
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      if (Iterator.TryPop(out var underlyingItem)) {
+         item = underlyingItem.Value;
+         return true;
+      } else {
+         item = default;
+         return false;
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+      return Iterator.Fold(seed, new DropNumerationFold<T, TAccumulator, TFold>(fold));
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      return Iterator.TryGetCount(out count);
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    /// <summary>Drops numeration of a sequence numerated with <see cref="Numerate" />.</summary>
    /// <returns>A sequence of the elements of the input sequence without their positions.</returns>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, DropNumerationIterator<T, TIterator>> DropNumeration<T, TIterator> (
-      this in Sequence<NumeratedItem<T>, TIterator> sequence
+   public static Contract<IIterator<T>, DropNumerationIterator<T, TIterator>> DropNumeration<T, TIterator> (
+      this in Contract<IIterator<NumeratedItem<T>>, TIterator> iterator
    )
    where TIterator: IIterator<NumeratedItem<T>> {
-      return Sequence<T>.Create(new DropNumerationIterator<T, TIterator>(sequence.Iterator), sequence.Count);
+      return new DropNumerationIterator<T, TIterator>(iterator);
    }
 }

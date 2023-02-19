@@ -2,28 +2,28 @@ using Blinq.Functors;
 
 namespace Blinq;
 
-public static partial class Sequence {
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static bool AllEqual<T, TIterator, TEqualer> (this in Sequence<T, TIterator> sequence, T value, TEqualer equaler)
+public static partial class Iterator {
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static bool AllEqual<T, TIterator, TEqualer> (this in Contract<IIterator<T>, TIterator> iterator, T value, TEqualer equaler)
    where TIterator: IIterator<T>
    where TEqualer: IEqualityComparer<T> {
-      return sequence.All(new EqualPredicate<T, TEqualer>(value, equaler));
+      return iterator.All(new EqualPredicate<T, TEqualer>(value, equaler));
    }
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static bool AllEqual<T, TIterator, TEqualer> (
-      this in Sequence<T, TIterator> sequence,
+      this in Contract<IIterator<T>, TIterator> iterator,
       T value,
       ProvideEqualer<T, TEqualer> provideEqualer
    )
    where TIterator: IIterator<T>
    where TEqualer: IEqualityComparer<T> {
-      return sequence.AllEqual(value, provideEqualer.Invoke());
+      return iterator.AllEqual(value, provideEqualer.Invoke());
    }
 
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static bool AllEqual<T, TIterator> (this in Sequence<T, TIterator> sequence, T value) where TIterator: IIterator<T> {
-      return sequence.AllEqual(value, Get<T>.Equaler.Default());
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static bool AllEqual<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator, T value) where TIterator: IIterator<T> {
+      return iterator.AllEqual(value, Get<T>.Equaler.Default());
    }
 }

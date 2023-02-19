@@ -1,8 +1,9 @@
+using System.Collections;
 using Blinq.Functors;
 
 namespace Blinq.Collections;
 
-public abstract class Vector<T>: IIterableCollection<T, VectorIterator<T>> {
+public abstract class Vector<T>: IReadOnlyCollection<T>, ICollection<T> {
    private protected ValueVector<T> Value;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -15,6 +16,7 @@ public abstract class Vector<T>: IIterableCollection<T, VectorIterator<T>> {
    [Pure] public T this [int index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.At(index); }
 
    [Pure] public T this [Index index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.At(index); }
+
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public T At (int index) {
@@ -32,8 +34,8 @@ public abstract class Vector<T>: IIterableCollection<T, VectorIterator<T>> {
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public VectorIterator<T> CreateIterator () {
-      return Value.CreateIterator();
+   public VectorIterator<T> Iter () {
+      return Value.Iter();
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -42,6 +44,10 @@ public abstract class Vector<T>: IIterableCollection<T, VectorIterator<T>> {
    }
 
    IEnumerator<T> IEnumerable<T>.GetEnumerator () {
+      return LightEnumeratorWrap<T>.Create(GetEnumerator());
+   }
+
+   IEnumerator IEnumerable.GetEnumerator () {
       return LightEnumeratorWrap<T>.Create(GetEnumerator());
    }
 
@@ -141,4 +147,20 @@ public abstract class Vector<T>: IIterableCollection<T, VectorIterator<T>> {
    public bool Contains (T item) {
       return Value.Contains(item);
    }
+
+   #region ICollection
+   bool ICollection<T>.IsReadOnly => true;
+
+   void ICollection<T>.Add (T item) {
+      throw new NotSupportedException();
+   }
+
+   bool ICollection<T>.Remove (T item) {
+      throw new NotSupportedException();
+   }
+
+   void ICollection<T>.Clear () {
+      throw new NotSupportedException();
+   }
+   #endregion
 }

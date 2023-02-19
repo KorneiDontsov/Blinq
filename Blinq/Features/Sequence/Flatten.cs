@@ -1,26 +1,29 @@
 namespace Blinq;
 
-readonly struct FlattenInFoldFunc<TOut, TAccumulator, TOutAccumulator, TOutIterator>:
-   IFoldFunc<Sequence<TOut, TOutIterator>, (TAccumulator Accumulator, TOutIterator OutIterator, bool Interrupted)>
+readonly struct FlattenFold<TOut, TAccumulator, TOutAccumulator, TOutIterator>:
+   IFold<Contract<IIterator<TOut>, TOutIterator>, (TAccumulator Accumulator, TOutIterator OutIterator, bool Interrupted)>
 where TOutIterator: IIterator<TOut>
-where TOutAccumulator: IFoldFunc<TOut, TAccumulator> {
-   readonly InterruptingFoldFunc<TOut, TAccumulator, TOutAccumulator> OutFoldFunc;
+where TOutAccumulator: IFold<TOut, TAccumulator> {
+   readonly InterruptingFold<TOut, TAccumulator, TOutAccumulator> OutFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public FlattenInFoldFunc (InterruptingFoldFunc<TOut, TAccumulator, TOutAccumulator> outFoldFunc) {
-      OutFoldFunc = outFoldFunc;
+   public FlattenFold (InterruptingFold<TOut, TAccumulator, TOutAccumulator> outFold) {
+      OutFold = outFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Invoke (Sequence<TOut, TOutIterator> item, ref (TAccumulator Accumulator, TOutIterator OutIterator, bool Interrupted) state) {
-      state.OutIterator = item.Iterator;
-      (state.Accumulator, state.Interrupted) = state.OutIterator.Fold((state.Accumulator, Interrupted: false), OutFoldFunc);
+   public bool Invoke (
+      Contract<IIterator<TOut>, TOutIterator> item,
+      ref (TAccumulator Accumulator, TOutIterator OutIterator, bool Interrupted) state
+   ) {
+      state.OutIterator = item;
+      (state.Accumulator, state.Interrupted) = state.OutIterator.Fold((state.Accumulator, Interrupted: false), OutFold);
       return state.Interrupted;
    }
 }
 
 public struct FlattenIterator<TOut, TOutIterator, TInIterator>: IIterator<TOut>
-where TInIterator: IIterator<Sequence<TOut, TOutIterator>>
+where TInIterator: IIterator<Contract<IIterator<TOut>, TOutIterator>>
 where TOutIterator: IIterator<TOut> {
    TInIterator InIterator;
    TOutIterator OutIterator;
@@ -35,33 +38,49 @@ where TOutIterator: IIterator<TOut> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TOut, TAccumulator> {
-      var outFoldFunc = new InterruptingFoldFunc<TOut, TAccumulator, TFoldFunc>(func);
+   public bool TryPop ([MaybeNullWhen(false)] out TOut item) {
+      if (Interrupted && OutIterator.TryPop(out item)) return true;
+
+      var popFold = new PopFold<TOut>();
+      var interruptingPopFold = new InterruptingFold<TOut, Option<TOut>, PopFold<TOut>>(popFold);
+      var flattenFold = new FlattenFold<TOut, Option<TOut>, PopFold<TOut>, TOutIterator>(interruptingPopFold);
+      (var result, OutIterator, Interrupted) = InIterator.Fold((Option<TOut>.None, default(TOutIterator)!, Interrupted: false), flattenFold);
+      return result.Is(out item);
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TOut, TAccumulator> {
+      var interruptingFold = new InterruptingFold<TOut, TAccumulator, TFold>(fold);
       if (Interrupted) {
-         (seed, Interrupted) = OutIterator.Fold((seed, Interrupted: false), outFoldFunc);
+         (seed, Interrupted) = OutIterator.Fold((seed, Interrupted: false), interruptingFold);
       }
 
       if (!Interrupted) {
-         (seed, OutIterator, Interrupted) =
-            InIterator.Fold(
-               (seed, default(TOutIterator)!, Interrupted: false),
-               new FlattenInFoldFunc<TOut, TAccumulator, TFoldFunc, TOutIterator>(outFoldFunc)
-            );
+         var flattenFold = new FlattenFold<TOut, TAccumulator, TFold, TOutIterator>(interruptingFold);
+         (seed, OutIterator, Interrupted) = InIterator.Fold((seed, default(TOutIterator)!, Interrupted: false), flattenFold);
       }
 
       return seed;
    }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      count = default;
+      return false;
+   }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    /// <summary>Flattens a sequence of the sequences into one sequence.</summary>
    /// <returns>A sequence whose elements are the elements of the input sequences.</returns>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, FlattenIterator<T, TInnerIterator, TIterator>> Flatten<T, TIterator, TInnerIterator> (
-      this in Sequence<Sequence<T, TInnerIterator>, TIterator> sequence
+   public static Contract<IIterator<T>, FlattenIterator<T, TInnerIterator, TIterator>> Flatten<T, TIterator, TInnerIterator> (
+      this in Contract<IIterator<Contract<IIterator<T>, TInnerIterator>>, TIterator> iterator
    )
-   where TIterator: IIterator<Sequence<T, TInnerIterator>>
+   where TIterator: IIterator<Contract<IIterator<T>, TInnerIterator>>
    where TInnerIterator: IIterator<T> {
-      return new FlattenIterator<T, TInnerIterator, TIterator>(sequence.Iterator);
+      return new FlattenIterator<T, TInnerIterator, TIterator>(iterator);
    }
 }

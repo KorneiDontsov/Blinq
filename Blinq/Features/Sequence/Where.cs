@@ -2,21 +2,40 @@ using Blinq.Functors;
 
 namespace Blinq;
 
-readonly struct WhereFoldFunc<T, TAccumulator, TPredicate, TInnerFoldFunc>: IFoldFunc<T, TAccumulator>
+readonly struct WhereFold<T, TAccumulator, TPredicate, TInnerFold>: IFold<T, TAccumulator>
 where TPredicate: IPredicate<T>
-where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
+where TInnerFold: IFold<T, TAccumulator> {
    readonly TPredicate Predicate;
-   readonly TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public WhereFoldFunc (TPredicate predicate, TInnerFoldFunc innerFoldFunc) {
+   public WhereFold (TPredicate predicate, TInnerFold innerFold) {
       Predicate = predicate;
-      InnerFoldFunc = innerFoldFunc;
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref TAccumulator accumulator) {
-      return Predicate.Invoke(item) && InnerFoldFunc.Invoke(item, ref accumulator);
+      return Predicate.Invoke(item) && InnerFold.Invoke(item, ref accumulator);
+   }
+}
+
+readonly struct WherePopFold<T, TPredicate>: IFold<T, Option<T>> where TPredicate: IPredicate<T> {
+   readonly TPredicate Predicate;
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public WherePopFold (TPredicate predicate) {
+      Predicate = predicate;
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Invoke (T item, ref Option<T> accumulator) {
+      if (Predicate.Invoke(item)) {
+         accumulator = item;
+         return true;
+      } else {
+         return false;
+      }
    }
 }
 
@@ -34,31 +53,45 @@ where TIterator: IIterator<T> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
-      return Iterator.Fold(seed, new WhereFoldFunc<T, TAccumulator, TPredicate, TFoldFunc>(Predicate, func));
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      var result = Iterator.Fold(Option<T>.None, new WherePopFold<T, TPredicate>(Predicate));
+      return result.Is(out item);
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+      return Iterator.Fold(seed, new WhereFold<T, TAccumulator, TPredicate, TFold>(Predicate, fold));
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      count = default;
+      return false;
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, TPredicate, TIterator>> Where<T, TIterator, TPredicate> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<T>, WhereIterator<T, TPredicate, TIterator>> Where<T, TIterator, TPredicate> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       TPredicate predicate
    )
    where TIterator: IIterator<T>
    where TPredicate: IPredicate<T> {
-      return new WhereIterator<T, TPredicate, TIterator>(sequence.Iterator, predicate);
+      return new WhereIterator<T, TPredicate, TIterator>(iterator, predicate);
    }
 
    /// <summary>Filters a sequence of values based on a predicate.</summary>
    /// <param name="predicate">A function to test each element for a condition.</param>
-   /// <returns>A sequence that contains elements from the input <paramref name="sequence" /> that satisfy the condition.</returns>
+   /// <returns>A sequence that contains elements from the input <paramref name="iterator" /> that satisfy the condition.</returns>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, FuncPredicate<T>, TIterator>> Where<T, TIterator> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<T>, WhereIterator<T, FuncPredicate<T>, TIterator>> Where<T, TIterator> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       Func<T, bool> predicate
    )
    where TIterator: IIterator<T> {
-      return sequence.Where(new FuncPredicate<T>(predicate));
+      return iterator.Where(new FuncPredicate<T>(predicate));
    }
 }

@@ -2,11 +2,11 @@ using Blinq.Functors;
 
 namespace Blinq;
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, ComparesPredicate<T, TComparer, TCondition>, TIterator>>
+   public static Contract<IIterator<T>, WhereIterator<T, ComparesPredicate<T, TComparer, TCondition>, TIterator>>
       WhereCompares<T, TIterator, TCondition, TComparer> (
-         this in Sequence<T, TIterator> sequence,
+         this in Contract<IIterator<T>, TIterator> iterator,
          T value,
          TComparer comparer,
          Type<TCondition> tCondition = default
@@ -15,13 +15,13 @@ public static partial class Sequence {
    where TComparer: IComparer<T>
    where TCondition: ICompareCondition {
       _ = tCondition;
-      return sequence.Where(new ComparesPredicate<T, TComparer, TCondition>(value, comparer));
+      return iterator.Where(new ComparesPredicate<T, TComparer, TCondition>(value, comparer));
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, ComparesPredicate<T, TComparer, TCondition>, TIterator>>
+   public static Contract<IIterator<T>, WhereIterator<T, ComparesPredicate<T, TComparer, TCondition>, TIterator>>
       WhereCompares<T, TIterator, TComparer, TCondition> (
-         this in Sequence<T, TIterator> sequence,
+         this in Contract<IIterator<T>, TIterator> iterator,
          T value,
          ProvideComparer<T, TComparer> provideComparer,
          Type<TCondition> tCondition = default
@@ -29,18 +29,18 @@ public static partial class Sequence {
    where TIterator: IIterator<T>
    where TCondition: ICompareCondition
    where TComparer: IComparer<T> {
-      return sequence.WhereCompares(value, provideComparer.Invoke(), tCondition);
+      return iterator.WhereCompares(value, provideComparer.Invoke(), tCondition);
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, WhereIterator<T, ComparesPredicate<T, DefaultComparer<T>, TCondition>, TIterator>>
+   public static Contract<IIterator<T>, WhereIterator<T, ComparesPredicate<T, DefaultComparer<T>, TCondition>, TIterator>>
       WhereCompares<T, TIterator, TCondition> (
-         this in Sequence<T, TIterator> sequence,
+         this in Contract<IIterator<T>, TIterator> iterator,
          T value,
          Type<TCondition> tCondition = default
       )
    where TIterator: IIterator<T>
    where TCondition: ICompareCondition {
-      return sequence.WhereCompares(value, Get<T>.Comparer.Default(), tCondition);
+      return iterator.WhereCompares(value, Get<T>.Comparer.Default(), tCondition);
    }
 }

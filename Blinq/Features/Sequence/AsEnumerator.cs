@@ -4,20 +4,18 @@ namespace Blinq;
 
 sealed class IteratorEnumerator<T, TIterator>: IEnumerator<T> where TIterator: IIterator<T> {
    TIterator Iterator;
-   public T Current { get; private set; }
+   T? Item;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public IteratorEnumerator (TIterator iterator) {
       Iterator = iterator;
-      Current = default!;
    }
 
+   public T Current => Item!;
    object? IEnumerator.Current => Current;
 
    public bool MoveNext () {
-      var result = Sequence<T>.Pop(ref Iterator);
-      Current = result.ValueOrDefault!;
-      return result.HasValue;
+      return Iterator.TryPop(out Item);
    }
 
    public void Dispose () { }
@@ -27,10 +25,10 @@ sealed class IteratorEnumerator<T, TIterator>: IEnumerator<T> where TIterator: I
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    /// <summary>Returns the iterator as <see cref="System.Collections.Generic.IEnumerator{T}" />.</summary>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static IEnumerator<T> AsEnumerator<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
-      return new IteratorEnumerator<T, TIterator>(sequence.Iterator);
+   public static IEnumerator<T> AsEnumerator<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator) where TIterator: IIterator<T> {
+      return new IteratorEnumerator<T, TIterator>(iterator);
    }
 }

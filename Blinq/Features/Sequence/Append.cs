@@ -9,31 +9,58 @@ public struct AppendIterator<T, TIterator>: IIterator<T> where TIterator: IItera
    public AppendIterator (TIterator iterator, T element) {
       Iterator = iterator;
       Element = element;
-      Appended = false;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      if (Appended) {
+         item = default;
+         return false;
+      } else if (Iterator.TryPop(out item)) {
+         return true;
+      } else {
+         Appended = true;
+         item = Element;
+         return true;
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
       if (!Appended) {
-         (seed, var interrupted) = Iterator.Fold((Accumulator: seed, Interrupted: false), new InterruptingFoldFunc<T, TAccumulator, TFoldFunc>(func));
+         (seed, var interrupted) = Iterator.Fold((Accumulator: seed, Interrupted: false), new InterruptingFold<T, TAccumulator, TFold>(fold));
          if (!interrupted) {
-            _ = func.Invoke(Element, ref seed);
+            _ = fold.Invoke(Element, ref seed);
             Appended = true;
          }
       }
 
       return seed;
    }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      if (Appended) {
+         count = 0;
+         return true;
+      } else if (Iterator.TryGetCount(out count) && count < int.MaxValue) {
+         ++count;
+         return true;
+      } else {
+         return false;
+      }
+   }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, AppendIterator<T, TIterator>> Append<T, TIterator> (this in Sequence<T, TIterator> sequence, T element)
-   where TIterator: IIterator<T> {
-      var newCount = sequence.Count switch {
-         (true, var count) => Option.Value(checked(count + 1)),
-         _ => Option.None,
-      };
-      return Sequence<T>.Create(new AppendIterator<T, TIterator>(sequence.Iterator, element), newCount);
+   public static Contract<IIterator<T>, AppendIterator<T, TIterator>> Append<T, TIterator> (
+      this in Contract<IIterator<T>, TIterator> iterator,
+      T element
+   ) where TIterator: IIterator<T> {
+      return new AppendIterator<T, TIterator>(iterator, element);
    }
 }

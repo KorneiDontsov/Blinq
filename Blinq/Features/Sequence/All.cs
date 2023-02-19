@@ -2,11 +2,11 @@ using Blinq.Functors;
 
 namespace Blinq;
 
-readonly struct AllFoldFunc<T, TPredicate>: IFoldFunc<T, bool> where TPredicate: IPredicate<T> {
+readonly struct AllFold<T, TPredicate>: IFold<T, bool> where TPredicate: IPredicate<T> {
    readonly TPredicate Predicate;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public AllFoldFunc (TPredicate predicate) {
+   public AllFold (TPredicate predicate) {
       Predicate = predicate;
    }
 
@@ -21,16 +21,16 @@ readonly struct AllFoldFunc<T, TPredicate>: IFoldFunc<T, bool> where TPredicate:
    }
 }
 
-public static partial class Sequence {
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static bool All<T, TIterator, TPredicate> (this in Sequence<T, TIterator> sequence, TPredicate predicate)
+public static partial class Iterator {
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static bool All<T, TIterator, TPredicate> (this in Contract<IIterator<T>, TIterator> iterator, TPredicate predicate)
    where TIterator: IIterator<T>
    where TPredicate: IPredicate<T> {
-      return sequence.Iterator.Fold(true, new AllFoldFunc<T, TPredicate>(predicate));
+      return iterator.Value.Fold(true, new AllFold<T, TPredicate>(predicate));
    }
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static bool All<T, TIterator> (this in Sequence<T, TIterator> sequence, Func<T, bool> predicate) where TIterator: IIterator<T> {
-      return sequence.All(new FuncPredicate<T>(predicate));
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static bool All<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator, Func<T, bool> predicate) where TIterator: IIterator<T> {
+      return iterator.All(new FuncPredicate<T>(predicate));
    }
 }

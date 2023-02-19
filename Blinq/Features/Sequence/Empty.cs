@@ -3,17 +3,29 @@ namespace Blinq;
 public readonly struct EmptyIterator<T>: IIterator<T> {
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      item = default;
+      return false;
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
       return seed;
+   }
+
+   public bool TryGetCount (out int count) {
+      count = 0;
+      return true;
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    /// <summary>Returns empty sequence of a specified type.</summary>
    /// <typeparam name="T">The type of elements of a sequence.</typeparam>
    /// <returns>Empty sequence.</returns>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, EmptyIterator<T>> Empty<T> () {
-      return Sequence<T>.Create(new EmptyIterator<T>(), count: 0);
+   public static Contract<IIterator<T>, EmptyIterator<T>> Empty<T> () {
+      return new EmptyIterator<T>();
    }
 }

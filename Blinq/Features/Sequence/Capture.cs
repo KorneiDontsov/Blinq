@@ -17,20 +17,20 @@ public readonly struct ItemWithCapture<TItem, TCapture> {
    }
 }
 
-struct CaptureFoldFunc<T, TAccumulator, TCapture, TInnerFoldFunc>: IFoldFunc<T, TAccumulator>
-where TInnerFoldFunc: IFoldFunc<ItemWithCapture<T, TCapture>, TAccumulator> {
+struct CaptureFold<T, TAccumulator, TCapture, TInnerFold>: IFold<T, TAccumulator>
+where TInnerFold: IFold<ItemWithCapture<T, TCapture>, TAccumulator> {
    readonly TCapture Capture;
-   TInnerFoldFunc InnerFoldFunc;
+   TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public CaptureFoldFunc (TCapture capture, TInnerFoldFunc innerFoldFunc) {
+   public CaptureFold (TCapture capture, TInnerFold innerFold) {
       Capture = capture;
-      InnerFoldFunc = innerFoldFunc;
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref TAccumulator accumulator) {
-      return InnerFoldFunc.Invoke(new ItemWithCapture<T, TCapture>(item, Capture), ref accumulator);
+      return InnerFold.Invoke(new ItemWithCapture<T, TCapture>(item, Capture), ref accumulator);
    }
 }
 
@@ -46,21 +46,39 @@ public struct CaptureIterator<T, TCapture, TIterator>: IIterator<ItemWithCapture
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func)
-   where TFoldFunc: IFoldFunc<ItemWithCapture<T, TCapture>, TAccumulator> {
-      return Iterator.Fold(seed, new CaptureFoldFunc<T, TAccumulator, TCapture, TFoldFunc>(Capture, func));
+   public bool TryPop (out ItemWithCapture<T, TCapture> item) {
+      if (Iterator.TryPop(out var underlyingItem)) {
+         item = new ItemWithCapture<T, TCapture>(underlyingItem, Capture);
+         return true;
+      } else {
+         item = default;
+         return false;
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold)
+   where TFold: IFold<ItemWithCapture<T, TCapture>, TAccumulator> {
+      return Iterator.Fold(seed, new CaptureFold<T, TAccumulator, TCapture, TFold>(Capture, fold));
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      return Iterator.TryGetCount(out count);
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    /// <summary>Appends value to each element of a sequence.</summary>
    /// <param name="capture">A value to append to each element.</param>
    /// <typeparam name="TCapture">The type of <paramref name="capture" />.</typeparam>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<ItemWithCapture<T, TCapture>, CaptureIterator<T, TCapture, TIterator>> Capture<T, TIterator, TCapture> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<ItemWithCapture<T, TCapture>>, CaptureIterator<T, TCapture, TIterator>> Capture<T, TIterator, TCapture> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       TCapture capture
    ) where TIterator: IIterator<T> {
-      return Sequence<ItemWithCapture<T, TCapture>>.Create(new CaptureIterator<T, TCapture, TIterator>(sequence.Iterator, capture), sequence.Count);
+      return new CaptureIterator<T, TCapture, TIterator>(iterator, capture);
    }
 }

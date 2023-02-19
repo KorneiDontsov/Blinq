@@ -37,6 +37,6 @@ public class WhereCountBenchmarks {
 
    [Benchmark]
    public int Blinq_Where_Count () {
-      return Array.Seq().Where(Predicate).Count();
+      return Array.Iter().Where(Predicate).Count();
    }
 }

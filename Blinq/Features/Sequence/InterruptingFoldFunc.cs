@@ -1,16 +1,16 @@
 namespace Blinq;
 
-readonly struct InterruptingFoldFunc<T, TAccumulator, TInnerFoldFunc>: IFoldFunc<T, (TAccumulator Accumulator, bool Interrupted)>
-where TInnerFoldFunc: IFoldFunc<T, TAccumulator> {
-   readonly TInnerFoldFunc InnerFoldFunc;
+readonly struct InterruptingFold<T, TAccumulator, TInnerFold>: IFold<T, (TAccumulator Accumulator, bool Interrupted)>
+where TInnerFold: IFold<T, TAccumulator> {
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public InterruptingFoldFunc (TInnerFoldFunc innerFoldFunc) {
-      InnerFoldFunc = innerFoldFunc;
+   public InterruptingFold (TInnerFold innerFold) {
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref (TAccumulator Accumulator, bool Interrupted) state) {
-      return state.Interrupted = InnerFoldFunc.Invoke(item, ref state.Accumulator);
+      return state.Interrupted = InnerFold.Invoke(item, ref state.Accumulator);
    }
 }

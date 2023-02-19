@@ -8,13 +8,23 @@ public readonly struct Contract<TAbstraction, TValue> where TValue: TAbstraction
       Value = value;
    }
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static implicit operator Contract<TAbstraction, TValue> (TValue value) {
       return new Contract<TAbstraction, TValue>(value);
    }
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static implicit operator TValue (Contract<TAbstraction, TValue> contract) {
       return contract.Value;
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public Contract<TAbstraction, TAbstraction> Box () {
+      return new Contract<TAbstraction, TAbstraction>(Value);
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static implicit operator Contract<TAbstraction, TAbstraction> (Contract<TAbstraction, TValue> contract) {
+      return contract.Box();
    }
 }

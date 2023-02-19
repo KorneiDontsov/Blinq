@@ -18,42 +18,84 @@ public struct DefaultIfEmptyIterator<T, TIterator>: IIterator<T> where TIterator
       Position = DefaultIfEmptyIteratorPosition.Start;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
       switch (Position) {
-         case DefaultIfEmptyIteratorPosition.Start when Sequence<T>.Pop(ref Iterator).Is(out var first): {
+         case DefaultIfEmptyIteratorPosition.Start when Iterator.TryPop(out item): {
             Position = DefaultIfEmptyIteratorPosition.Middle;
-            if (func.Invoke(first, ref seed)) {
+            return true;
+         }
+         case DefaultIfEmptyIteratorPosition.Start: {
+            Position = DefaultIfEmptyIteratorPosition.End;
+            item = DefaultValue;
+            return true;
+         }
+         case DefaultIfEmptyIteratorPosition.Middle: {
+            return Iterator.TryPop(out item);
+         }
+         default: {
+            item = default;
+            return false;
+         }
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+      switch (Position) {
+         case DefaultIfEmptyIteratorPosition.Start when Iterator.TryPop(out var first): {
+            Position = DefaultIfEmptyIteratorPosition.Middle;
+            if (fold.Invoke(first, ref seed)) {
                return seed;
             } else {
                goto case DefaultIfEmptyIteratorPosition.Middle;
             }
          }
          case DefaultIfEmptyIteratorPosition.Start: {
-            func.Invoke(DefaultValue, ref seed);
             Position = DefaultIfEmptyIteratorPosition.End;
+            _ = fold.Invoke(DefaultValue, ref seed);
             return seed;
          }
          case DefaultIfEmptyIteratorPosition.Middle: {
-            return Iterator.Fold(seed, func);
+            return Iterator.Fold(seed, fold);
          }
          default: {
             return seed;
          }
       }
    }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      switch (Position) {
+         case DefaultIfEmptyIteratorPosition.Start: {
+            if (Iterator.TryGetCount(out count)) {
+               if (count == 0) count = 1;
+               return true;
+            } else {
+               return false;
+            }
+         }
+         case DefaultIfEmptyIteratorPosition.Middle: {
+            return Iterator.TryGetCount(out count);
+         }
+         default: {
+            count = 0;
+            return false;
+         }
+      }
+   }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, DefaultIfEmptyIterator<T, TIterator>> DefaultIfEmpty<T, TIterator> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<T>, DefaultIfEmptyIterator<T, TIterator>> DefaultIfEmpty<T, TIterator> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       T defaultValue = default!
    ) where TIterator: IIterator<T> {
-      var count = sequence.Count switch {
-         (true, 0) => Option.Value(1),
-         _ => sequence.Count,
-      };
-      return Sequence<T>.Create(new DefaultIfEmptyIterator<T, TIterator>(sequence.Iterator, defaultValue), count);
+      return new DefaultIfEmptyIterator<T, TIterator>(iterator, defaultValue);
    }
 }

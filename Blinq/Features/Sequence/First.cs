@@ -1,9 +1,8 @@
 namespace Blinq;
 
-public static partial class Sequence {
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Option<T> First<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
-      var iterator = sequence.Iterator;
-      return Sequence<T>.Pop(ref iterator);
+public static partial class Iterator {
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static Option<T> First<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator) where TIterator: IIterator<T> {
+      return iterator.Value.TryPop(out var item) ? item : Option.None;
    }
 }

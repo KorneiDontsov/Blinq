@@ -1,6 +1,6 @@
 namespace Blinq;
 
-readonly struct CollectFoldFunc<T, TCollection, TCollector>: IFoldFunc<T, TCollector>
+readonly struct CollectFold<T, TCollection, TCollector>: IFold<T, TCollector>
 where TCollector: ICollector<T, TCollection> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref TCollector accumulator) {
@@ -9,27 +9,28 @@ where TCollector: ICollector<T, TCollection> {
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static TCollection Collect<T, TIterator, TCollection, TCollector> (
-      this in Sequence<T, TIterator> sequence,
+      this in Contract<IIterator<T>, TIterator> iterator,
       Contract<ICollector<T, TCollection>, TCollector> collector
    )
    where TIterator: IIterator<T>
    where TCollector: ICollector<T, TCollection> {
-      var collectorValue = collector.Value;
-      if (sequence.Count is (true, var count)) collectorValue.Capacity = count;
-      collectorValue = sequence.Iterator.Fold(collectorValue, new CollectFoldFunc<T, TCollection, TCollector>());
-      return collectorValue.Build();
+      var iter = iterator.Value;
+      var coll = collector.Value;
+      if (iter.TryGetCount(out var count)) coll.Capacity = count;
+      coll = iter.Fold(coll, new CollectFold<T, TCollection, TCollector>());
+      return coll.Build();
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static TCollection Collect<T, TIterator, TCollection, TCollector> (
-      this in Sequence<T, TIterator> sequence,
+      this in Contract<IIterator<T>, TIterator> iterator,
       ProvideCollector<T, TCollection, TCollector> provideCollector
    )
    where TIterator: IIterator<T>
    where TCollector: ICollector<T, TCollection> {
-      return sequence.Collect(provideCollector.Invoke());
+      return iterator.Collect(provideCollector.Invoke());
    }
 }

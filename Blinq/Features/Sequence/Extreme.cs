@@ -1,12 +1,12 @@
 namespace Blinq;
 
-readonly struct ExtremeFoldFunc<T, TComparer, TCondition>: IFoldFunc<T, T>
+readonly struct ExtremeFold<T, TComparer, TCondition>: IFold<T, T>
 where TComparer: IComparer<T>
 where TCondition: ICompareCondition {
    readonly TComparer Comparer;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public ExtremeFoldFunc (TComparer comparer) {
+   public ExtremeFold (TComparer comparer) {
       Comparer = comparer;
    }
 
@@ -20,10 +20,10 @@ where TCondition: ICompareCondition {
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    static Option<T> Extreme<T, TIterator, TCondition, TComparer> (
-      this in Sequence<T, TIterator> sequence,
+      this in Contract<IIterator<T>, TIterator> iterator,
       TComparer comparer,
       Type<TCondition> tCondition = default
    )
@@ -31,10 +31,7 @@ public static partial class Sequence {
    where TComparer: IComparer<T>
    where TCondition: ICompareCondition {
       _ = tCondition;
-      var iterator = sequence.Iterator;
-      return Sequence<T>.Pop(ref iterator) switch {
-         (true, var first) => iterator.Fold(first, new ExtremeFoldFunc<T, TComparer, TCondition>(comparer)),
-         _ => Option.None,
-      };
+      var iter = iterator.Value;
+      return iter.TryPop(out var first) ? iter.Fold(first, new ExtremeFold<T, TComparer, TCondition>(comparer)) : Option.None;
    }
 }

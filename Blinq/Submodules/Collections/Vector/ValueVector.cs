@@ -6,7 +6,7 @@ namespace Blinq.Collections;
 
 [StructLayout(LayoutKind.Sequential)]
 [SuppressMessage("ReSharper", "ConvertToAutoPropertyWithPrivateSetter")]
-public struct ValueVector<T>: IIterableCollection<T, VectorIterator<T>>, IMutVectorInternal<T> {
+public struct ValueVector<T>: IReadOnlyCollection<T>, ICollection<T>, IMutVectorInternal<T> {
    const int DefaultCapacity = 4;
 
    T[] Items;
@@ -81,7 +81,7 @@ public struct ValueVector<T>: IIterableCollection<T, VectorIterator<T>>, IMutVec
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public readonly VectorIterator<T> CreateIterator () {
+   public readonly VectorIterator<T> Iter () {
       return new(Items, Size);
    }
 
@@ -472,6 +472,11 @@ public struct ValueVector<T>: IIterableCollection<T, VectorIterator<T>>, IMutVec
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public int RemoveAll (T item) {
       return RemoveAll(item, Get<T>.Equaler.Default());
+   }
+
+   public void Clear () {
+      if (RuntimeHelpers.IsReferenceOrContainsReferences<T>()) Array.Clear(Items, 0, Size);
+      Size = 0;
    }
 
    public void Reverse (int index, int count) {

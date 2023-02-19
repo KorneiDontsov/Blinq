@@ -67,7 +67,7 @@ public static class Option {
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static bool Is<T> (this in Option<T> option, [MaybeNullWhen(false)] out T value) {
-      value = option.ValueOrDefault!;
+      value = option.ValueOrDefault;
       return option.HasValue;
    }
 

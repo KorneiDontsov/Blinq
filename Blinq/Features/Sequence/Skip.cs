@@ -1,6 +1,6 @@
 namespace Blinq;
 
-readonly struct SkipFoldFunc<T>: IFoldFunc<T, int> {
+readonly struct SkipFold<T>: IFold<T, int> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref int accumulator) {
       return --accumulator == 0;
@@ -9,37 +9,55 @@ readonly struct SkipFoldFunc<T>: IFoldFunc<T, int> {
 
 public struct SkipIterator<T, TIterator>: IIterator<T> where TIterator: IIterator<T> {
    TIterator Iterator;
-   readonly int Count;
+   readonly int SkipCount;
    bool Skipped;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public SkipIterator (TIterator iterator, int count) {
+   public SkipIterator (TIterator iterator, int skipCount) {
       Iterator = iterator;
-      Count = count;
-      Skipped = Count == 0;
+      SkipCount = skipCount;
+      Skipped = SkipCount == 0;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
+   void EnsureSkipped () {
       if (!Skipped) {
-         Iterator.Fold(Count, new SkipFoldFunc<T>());
+         Iterator.Fold(SkipCount, new SkipFold<T>());
          Skipped = true;
       }
+   }
 
-      return Iterator.Fold(seed, func);
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      EnsureSkipped();
+      return Iterator.TryPop(out item);
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+      EnsureSkipped();
+      return Iterator.Fold(seed, fold);
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      if (Iterator.TryGetCount(out count)) {
+         if (!Skipped) count = count <= SkipCount ? 0 : count - SkipCount;
+         return true;
+      } else {
+         return false;
+      }
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, SkipIterator<T, TIterator>> Skip<T, TIterator> (this in Sequence<T, TIterator> sequence, int count)
+   public static Contract<IIterator<T>, SkipIterator<T, TIterator>> Skip<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator, int count)
    where TIterator: IIterator<T> {
       if (count < 0) Get.Throw<ArgumentOutOfRangeException>();
-
-      var newCount = sequence.Count switch {
-         (true, var beginCount) => Option.Value(System.Math.Max(0, beginCount - count)),
-         _ => Option.None,
-      };
-      return Sequence<T>.Create(new SkipIterator<T, TIterator>(sequence.Iterator, count), newCount);
+      return new SkipIterator<T, TIterator>(iterator, count);
    }
 }

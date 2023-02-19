@@ -2,24 +2,24 @@ using Blinq.Functors;
 
 namespace Blinq;
 
-readonly struct ZipFoldFunc<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TInnerFoldFunc>:
-   IFoldFunc<TIn1, (TAccumulator accumulator, TIn2Iterator iterator2)>
+readonly struct ZipFold<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TInnerFold>:
+   IFold<TIn1, (TAccumulator accumulator, TIn2Iterator iterator2)>
 where TIn2Iterator: IIterator<TIn2>
 where TZipper: IZipper<TIn1, TIn2, TOut>
-where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
+where TInnerFold: IFold<TOut, TAccumulator> {
    readonly TZipper Zipper;
-   readonly TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public ZipFoldFunc (TZipper zipper, TInnerFoldFunc innerFoldFunc) {
+   public ZipFold (TZipper zipper, TInnerFold innerFold) {
       Zipper = zipper;
-      InnerFoldFunc = innerFoldFunc;
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (TIn1 item1, ref (TAccumulator accumulator, TIn2Iterator iterator2) state) {
-      return Sequence<TIn2>.Pop(ref state.iterator2).Is(out var item2)
-         && InnerFoldFunc.Invoke(Zipper.Invoke(item1, item2), ref state.accumulator);
+      return state.iterator2.TryPop(out var item2)
+         && InnerFold.Invoke(Zipper.Invoke(item1, item2), ref state.accumulator);
    }
 }
 
@@ -38,54 +38,72 @@ where TZipper: IZipper<TIn1, TIn2, TOut> {
       Zipper = zipper;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TOut, TAccumulator> {
+   public bool TryPop ([MaybeNullWhen(false)] out TOut item) {
+      if (Iterator1.TryPop(out var item1) && Iterator2.TryPop(out var item2)) {
+         item = Zipper.Invoke(item1, item2);
+         return true;
+      } else {
+         item = default;
+         return false;
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TOut, TAccumulator> {
       (seed, Iterator2) =
-         Iterator1.Fold((seed, Iterator2), new ZipFoldFunc<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TFoldFunc>(Zipper, func));
+         Iterator1.Fold((seed, Iterator2), new ZipFold<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TFold>(Zipper, fold));
       return seed;
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      if (Iterator1.TryGetCount(out count) && Iterator2.TryGetCount(out var count2)) {
+         if (count > count2) count = count2;
+         return true;
+      } else {
+         return false;
+      }
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TResult, ZipIterator<TResult, T1, T2, TZipper, T1Iterator, T2Iterator>>
+   public static Contract<IIterator<TResult>, ZipIterator<TResult, T1, T2, TZipper, T1Iterator, T2Iterator>>
       Zip<T1, T1Iterator, T2, T2Iterator, TResult, TZipper> (
-         this in Sequence<T1, T1Iterator> sequence1,
-         Sequence<T2, T2Iterator> sequence2,
+         this in Contract<IIterator<T1>, T1Iterator> iterator1,
+         Contract<IIterator<T2>, T2Iterator> iterator2,
          Contract<IZipper<T1, T2, TResult>, TZipper> zipper
       )
    where T1Iterator: IIterator<T1>
    where T2Iterator: IIterator<T2>
    where TZipper: IZipper<T1, T2, TResult> {
-      var count =
-         (sequence1.Count, sequence2.Count) switch {
-            ((true, var count1), (true, var count2)) => Option.Value(System.Math.Min(count1, count2)),
-            _ => Option.None,
-         };
-      var iterator = new ZipIterator<TResult, T1, T2, TZipper, T1Iterator, T2Iterator>(sequence1.Iterator, sequence2.Iterator, zipper);
-      return Sequence<TResult>.Create(iterator, count);
+      return new ZipIterator<TResult, T1, T2, TZipper, T1Iterator, T2Iterator>(iterator1, iterator2, zipper);
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TResult, ZipIterator<TResult, T1, T2, FuncZipper<T1, T2, TResult>, T1Iterator, T2Iterator>>
+   public static Contract<IIterator<TResult>, ZipIterator<TResult, T1, T2, FuncZipper<T1, T2, TResult>, T1Iterator, T2Iterator>>
       Zip<T1, T1Iterator, T2, T2Iterator, TResult> (
-         this in Sequence<T1, T1Iterator> sequence1,
-         Sequence<T2, T2Iterator> sequence2,
+         this in Contract<IIterator<T1>, T1Iterator> iterator1,
+         Contract<IIterator<T2>, T2Iterator> iterator2,
          Func<T1, T2, TResult> zipper
       )
    where T1Iterator: IIterator<T1>
    where T2Iterator: IIterator<T2> {
-      return sequence1.Zip(sequence2, Get<IZipper<T1, T2, TResult>>.AsContract(new FuncZipper<T1, T2, TResult>(zipper)));
+      return iterator1.Zip(iterator2, Get<IZipper<T1, T2, TResult>>.AsContract(new FuncZipper<T1, T2, TResult>(zipper)));
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<(T1, T2), ZipIterator<(T1, T2), T1, T2, TupleZipper<T1, T2>, T1Iterator, T2Iterator>>
+   public static Contract<IIterator<(T1, T2)>, ZipIterator<(T1, T2), T1, T2, TupleZipper<T1, T2>, T1Iterator, T2Iterator>>
       Zip<T1, T1Iterator, T2, T2Iterator> (
-         this in Sequence<T1, T1Iterator> sequence1,
-         Sequence<T2, T2Iterator> sequence2
+         this in Contract<IIterator<T1>, T1Iterator> iterator1,
+         Contract<IIterator<T2>, T2Iterator> iterator2
       )
    where T1Iterator: IIterator<T1>
    where T2Iterator: IIterator<T2> {
-      return sequence1.Zip(sequence2, Get<IZipper<T1, T2, (T1, T2)>>.AsContract(new TupleZipper<T1, T2>()));
+      return iterator1.Zip(iterator2, Get<IZipper<T1, T2, (T1, T2)>>.AsContract(new TupleZipper<T1, T2>()));
    }
 }

@@ -2,21 +2,21 @@ using Blinq.Functors;
 
 namespace Blinq;
 
-readonly struct SelectFoldFunc<TIn, TAccumulator, TOut, TSelector, TInnerFoldFunc>: IFoldFunc<TIn, TAccumulator>
+readonly struct SelectFold<TIn, TAccumulator, TOut, TSelector, TInnerFold>: IFold<TIn, TAccumulator>
 where TSelector: ISelector<TIn, TOut>
-where TInnerFoldFunc: IFoldFunc<TOut, TAccumulator> {
+where TInnerFold: IFold<TOut, TAccumulator> {
    readonly TSelector Selector;
-   readonly TInnerFoldFunc InnerFoldFunc;
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public SelectFoldFunc (TSelector selector, TInnerFoldFunc innerFoldFunc) {
+   public SelectFold (TSelector selector, TInnerFold innerFold) {
       Selector = selector;
-      InnerFoldFunc = innerFoldFunc;
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (TIn item, ref TAccumulator accumulator) {
-      return InnerFoldFunc.Invoke(Selector.Invoke(item), ref accumulator);
+      return InnerFold.Invoke(Selector.Invoke(item), ref accumulator);
    }
 }
 
@@ -34,32 +34,50 @@ where TInIterator: IIterator<TIn> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TOut, TAccumulator> {
-      return InIterator.Fold(seed, new SelectFoldFunc<TIn, TAccumulator, TOut, TSelector, TFoldFunc>(Selector, func));
+   public bool TryPop ([MaybeNullWhen(false)] out TOut item) {
+      if (InIterator.TryPop(out var inputItem)) {
+         item = Selector.Invoke(inputItem);
+         return true;
+      } else {
+         item = default;
+         return false;
+      }
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TOut, TAccumulator> {
+      return InIterator.Fold(seed, new SelectFold<TIn, TAccumulator, TOut, TSelector, TFold>(Selector, fold));
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      return InIterator.TryGetCount(out count);
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TResult, SelectIterator<TResult, T, TSelector, TIterator>> Select<T, TIterator, TResult, TSelector> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<TResult>, SelectIterator<TResult, T, TSelector, TIterator>> Select<T, TIterator, TResult, TSelector> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       Contract<ISelector<T, TResult>, TSelector> selector
    )
    where TIterator: IIterator<T>
    where TSelector: ISelector<T, TResult> {
-      return Sequence<TResult>.Create(new SelectIterator<TResult, T, TSelector, TIterator>(sequence.Iterator, selector), sequence.Count);
+      return new SelectIterator<TResult, T, TSelector, TIterator>(iterator, selector);
    }
 
    /// <summary>Projects each element of a sequence into a new form.</summary>
    /// <param name="selector">A transform function to apply to each element.</param>
    /// <typeparam name="TResult">The type of the value returned by <paramref name="selector" />.</typeparam>
-   /// <returns>A sequence whose elements are the result of invoking the transform function on each element of <paramref name="sequence" />.</returns>
+   /// <returns>A sequence whose elements are the result of invoking the transform function on each element of <paramref name="iterator" />.</returns>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<TResult, SelectIterator<TResult, T, FuncSelector<T, TResult>, TIterator>> Select<T, TIterator, TResult> (
-      this in Sequence<T, TIterator> sequence,
+   public static Contract<IIterator<TResult>, SelectIterator<TResult, T, FuncSelector<T, TResult>, TIterator>> Select<T, TIterator, TResult> (
+      this in Contract<IIterator<T>, TIterator> iterator,
       Func<T, TResult> selector
    )
    where TIterator: IIterator<T> {
-      return sequence.Select(Get<ISelector<T, TResult>>.AsContract(new FuncSelector<T, TResult>(selector)));
+      return iterator.Select(Get<ISelector<T, TResult>>.AsContract(new FuncSelector<T, TResult>(selector)));
    }
 }

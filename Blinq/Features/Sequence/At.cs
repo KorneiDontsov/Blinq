@@ -1,6 +1,6 @@
 namespace Blinq;
 
-readonly struct AtFoldFunc<T>: IFoldFunc<T, (Option<T> result, int countLeft)> {
+readonly struct AtFold<T>: IFold<T, (Option<T> result, int countLeft)> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (T item, ref (Option<T> result, int countLeft) accumulator) {
       if (accumulator.countLeft is 0) {
@@ -13,12 +13,12 @@ readonly struct AtFoldFunc<T>: IFoldFunc<T, (Option<T> result, int countLeft)> {
    }
 }
 
-readonly struct AtFromEndFoldFunc<T>: IFoldFunc<T, ValueTuple> {
+readonly struct AtFromEndFold<T>: IFold<T, ValueTuple> {
    readonly int IndexFromEnd;
    readonly Queue<T> Queue;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public AtFromEndFoldFunc (int indexFromEnd, Queue<T> queue) {
+   public AtFromEndFold (int indexFromEnd, Queue<T> queue) {
       IndexFromEnd = indexFromEnd;
       Queue = queue;
    }
@@ -31,32 +31,43 @@ readonly struct AtFromEndFoldFunc<T>: IFoldFunc<T, ValueTuple> {
    }
 }
 
-public static partial class Sequence {
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Option<T> At<T, TIterator> (this in Sequence<T, TIterator> sequence, int index) where TIterator: IIterator<T> {
+public static partial class Iterator {
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   static Option<T> At<T, TIterator> (ref TIterator iterator, int index) where TIterator: IIterator<T> {
       if (index < 0) Get.Throw<ArgumentOutOfRangeException>();
-      return sequence.Iterator.Fold((result: Option<T>.None, countLeft: index), new AtFoldFunc<T>()).result;
+      return iterator.Fold((result: Option<T>.None, countLeft: index), new AtFold<T>()).result;
    }
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Option<T> At<T, TIterator> (this in Sequence<T, TIterator> sequence, Index index) where TIterator: IIterator<T> {
+   [Pure] [MethodImpl(MethodImplOptions.NoInlining)]
+   static Option<T> AtFromEnd<T, TIterator> (ref TIterator iterator, int indexValue) where TIterator: IIterator<T> {
+      if (iterator.TryPop(out var first)) {
+         var queue = new Queue<T>();
+         queue.Enqueue(first);
+
+         iterator.Fold(new ValueTuple(), new AtFromEndFold<T>(indexValue, queue));
+
+         if (queue.Count == indexValue) return queue.Dequeue();
+      }
+
+      return Option.None;
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static Option<T> At<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator, int index) where TIterator: IIterator<T> {
+      var iter = iterator.Value;
+      return At<T, TIterator>(ref iter, index);
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static Option<T> At<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator, Index index) where TIterator: IIterator<T> {
+      var iter = iterator.Value;
       var indexValue = index.Value;
       if (!index.IsFromEnd) {
-         return sequence.At(indexValue);
-      } else if (sequence.Count.Is(out var count)) {
-         return sequence.At(count - indexValue);
+         return At<T, TIterator>(ref iter, indexValue);
+      } else if (iter.TryGetCount(out var count)) {
+         return indexValue <= count ? At<T, TIterator>(ref iter, count - indexValue) : Option.None;
       } else {
-         var iterator = sequence.Iterator;
-         if (Sequence<T>.Pop(ref iterator).Is(out var first)) {
-            var queue = new Queue<T>();
-            queue.Enqueue(first);
-
-            iterator.Fold(new ValueTuple(), new AtFromEndFoldFunc<T>(indexValue, queue));
-
-            if (queue.Count == indexValue) return queue.Dequeue();
-         }
-
-         return Option.None;
+         return AtFromEnd<T, TIterator>(ref iter, indexValue);
       }
    }
 }

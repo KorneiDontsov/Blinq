@@ -1,17 +1,29 @@
 namespace Blinq;
 
-readonly struct FilterByTypeFoldFunc<TFrom, TAccumulator, TTo, TInnerFoldFunc>: IFoldFunc<TFrom, TAccumulator>
-where TInnerFoldFunc: IFoldFunc<TTo, TAccumulator> {
-   readonly TInnerFoldFunc InnerFoldFunc;
+readonly struct FilterByTypeFold<TFrom, TAccumulator, TTo, TInnerFold>: IFold<TFrom, TAccumulator>
+where TInnerFold: IFold<TTo, TAccumulator> {
+   readonly TInnerFold InnerFold;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public FilterByTypeFoldFunc (TInnerFoldFunc innerFoldFunc) {
-      InnerFoldFunc = innerFoldFunc;
+   public FilterByTypeFold (TInnerFold innerFold) {
+      InnerFold = innerFold;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Invoke (TFrom item, ref TAccumulator accumulator) {
-      return item is TTo outItem && InnerFoldFunc.Invoke(outItem, ref accumulator);
+      return item is TTo outItem && InnerFold.Invoke(outItem, ref accumulator);
+   }
+}
+
+readonly struct FilterByTypePopFold<TFrom, TTo>: IFold<TFrom, Option<TTo>> {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Invoke (TFrom item, ref Option<TTo> accumulator) {
+      if (item is TTo outItem) {
+         accumulator = Option.Value(outItem);
+         return true;
+      } else {
+         return false;
+      }
    }
 }
 
@@ -25,15 +37,30 @@ where TFromIterator: IIterator<TFrom> {
       FromIterator = fromIterator;
    }
 
+   /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<TTo, TAccumulator> {
-      return FromIterator.Fold(seed, new FilterByTypeFoldFunc<TFrom, TAccumulator, TTo, TFoldFunc>(func));
+   public bool TryPop ([MaybeNullWhen(false)] out TTo item) {
+      var result = FromIterator.Fold(Option<TTo>.None, new FilterByTypePopFold<TFrom, TTo>());
+      return result.Is(out item);
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TTo, TAccumulator> {
+      return FromIterator.Fold(seed, new FilterByTypeFold<TFrom, TAccumulator, TTo, TFold>(fold));
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      count = default;
+      return false;
    }
 }
 
 public readonly partial struct FilterContinuation<T, TIterator> {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public Sequence<TTo, FilterByTypeIterator<TTo, T, TIterator>> ByType<TTo> () where TTo: T {
-      return new FilterByTypeIterator<TTo, T, TIterator>(Sequence.Iterator);
+   public Contract<IIterator<TTo>, FilterByTypeIterator<TTo, T, TIterator>> ByType<TTo> () where TTo: T {
+      return new FilterByTypeIterator<TTo, T, TIterator>(Iterator);
    }
 }

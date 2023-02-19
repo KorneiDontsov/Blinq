@@ -14,24 +14,50 @@ public struct PrependIterator<T, TIterator>: IIterator<T> where TIterator: IIter
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFoldFunc> (TAccumulator seed, TFoldFunc func) where TFoldFunc: IFoldFunc<T, TAccumulator> {
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
       if (!Prepended) {
          Prepended = true;
-         if (func.Invoke(Element, ref seed)) return seed;
+         item = Element;
+         return true;
       }
 
-      return Iterator.Fold(seed, func);
+      return Iterator.TryPop(out item);
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+      if (!Prepended) {
+         Prepended = true;
+         if (fold.Invoke(Element, ref seed)) return seed;
+      }
+
+      return Iterator.Fold(seed, fold);
+   }
+
+   /// <inheritdoc />
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryGetCount (out int count) {
+      if (!Iterator.TryGetCount(out count)) {
+         return false;
+      } else if (!Prepended) {
+         return true;
+      } else if (count < int.MaxValue) {
+         ++count;
+         return true;
+      } else {
+         return false;
+      }
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Sequence<T, PrependIterator<T, TIterator>> Prepend<T, TIterator> (this in Sequence<T, TIterator> sequence, T element)
+   public static Contract<IIterator<T>, PrependIterator<T, TIterator>> Prepend<T, TIterator> (
+      this in Contract<IIterator<T>, TIterator> iterator,
+      T element
+   )
    where TIterator: IIterator<T> {
-      var newCount = sequence.Count switch {
-         (true, var count) => Option.Value(checked(count + 1)),
-         _ => Option.None,
-      };
-      return Sequence<T>.Create(new PrependIterator<T, TIterator>(sequence.Iterator, element), newCount);
+      return new PrependIterator<T, TIterator>(iterator, element);
    }
 }

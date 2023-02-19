@@ -153,4 +153,9 @@ public sealed class MutVector<T>: Vector<T>, ICollection<T>, IMutVectorInternal<
    public int RemoveAll<TPredicate> (TPredicate predicate) where TPredicate: IPredicate<T> {
       return Value.RemoveAll(predicate);
    }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void Clear () {
+      Value.Clear();
+   }
 }

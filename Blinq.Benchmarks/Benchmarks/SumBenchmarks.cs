@@ -31,6 +31,6 @@ public class SumBenchmarks {
 
    [Benchmark]
    public int Blinq_Sum () {
-      return Array.Seq().Sum();
+      return Array.Iter().Sum();
    }
 }

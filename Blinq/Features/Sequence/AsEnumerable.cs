@@ -24,13 +24,13 @@ sealed class IteratorAsEnumerable<T, TIterator>: IEnumerable<T> where TIterator:
    }
 }
 
-public static partial class Sequence {
+public static partial class Iterator {
    /// <summary>
    ///    Returns a sequence as <see cref="IEnumerable{T}" />. Note that it can be enumerated only once.
    /// </summary>
    /// <returns>A <see cref="IEnumerable{T}" /> representation of a sequence that can be enumerated only once.</returns>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static IEnumerable<T> AsEnumerable<T, TIterator> (this in Sequence<T, TIterator> sequence) where TIterator: IIterator<T> {
-      return new IteratorAsEnumerable<T, TIterator>(sequence.Iterator);
+   public static IEnumerable<T> AsEnumerable<T, TIterator> (this in Contract<IIterator<T>, TIterator> iterator) where TIterator: IIterator<T> {
+      return new IteratorAsEnumerable<T, TIterator>(iterator);
    }
 }

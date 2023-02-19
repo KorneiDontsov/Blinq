@@ -2,26 +2,26 @@ using System.Linq;
 
 namespace Blinq.Tests;
 
-public class TestSequence {
+public class TestIterator {
    [Test]
    public void Empty () {
       var expected = Enumerable.Empty<object>();
-      var actual = Sequence.Empty<object>().AsEnumerable();
+      var actual = Iterator.Empty<object>().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
    [Test]
    public void FlattenOnEmpty () {
-      var sequence = Sequence.Empty<Sequence<ValueTuple, IIterator<ValueTuple>>>();
-      var actual = sequence.Flatten().AsEnumerable();
+      var iterator = Iterator.Empty<Contract<IIterator<ValueTuple>, IIterator<ValueTuple>>>();
+      var actual = iterator.Flatten().AsEnumerable();
       Assert.IsEmpty(actual);
    }
 }
 
-public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
-   protected abstract Sequence<int, TIterator> Range (int start, int count);
+public abstract class TestIterator<TIterator> where TIterator: IIterator<int> {
+   protected abstract Contract<IIterator<int>, TIterator> Range (int start, int count);
 
-   Sequence<int, TIterator> Range (int n) {
+   Contract<IIterator<int>, TIterator> Range (int n) {
       return Range(0, n);
    }
 
@@ -101,8 +101,8 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
       var capture = new object();
       var expected = 0;
 
-      var sequence = Range(n).Capture(capture);
-      while (sequence.Pop().Is(out var item)) {
+      var iterator = Range(n).Capture(capture);
+      while (iterator.Pop().Is(out var item)) {
          Assert.AreEqual(expected, item.Value);
          Assert.AreSame(capture, item.Capture);
          ++expected;
@@ -121,40 +121,40 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
    [Test]
    public void FlattenOnEmptyItem () {
       var expected = Enumerable.Empty<int>();
-      var sequence = new[] { Range(0) }.Seq();
-      var actual = sequence.Flatten().AsEnumerable();
+      var iterator = new[] { Range(0) }.Iter();
+      var actual = iterator.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
    [Test]
    public void FlattenOnSingleItem () {
       var expected = new[] { 0 }.AsEnumerable();
-      var sequence = new[] { Range(1) }.Seq();
-      var actual = sequence.Flatten().AsEnumerable();
+      var iterator = new[] { Range(1) }.Iter();
+      var actual = iterator.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
    [Test]
    public void FlattenOnMultipleItems () {
       var expected = new[] { 0, 1, 0, 1, 2, 0, 1, 2, 3, 4 }.AsEnumerable();
-      var sequence = new[] { Range(2), Range(3), Range(5) }.Seq();
-      var actual = sequence.Flatten().AsEnumerable();
+      var iterator = new[] { Range(2), Range(3), Range(5) }.Iter();
+      var actual = iterator.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
    [Test]
    public void FlattenOnMultipleItemsWithSingleFold () {
       var expected = 14;
-      var sequence = new[] { Range(2), Range(3), Range(5) }.Seq();
-      var actual = sequence.Flatten().Sum();
+      var iterator = new[] { Range(2), Range(3), Range(5) }.Iter();
+      var actual = iterator.Flatten().Sum();
       Assert.AreEqual(expected, actual);
    }
 
    [Test]
    public void FlattenOnBoxedItems () {
       var expected = new[] { 0, 1, 0, 1, 2, 0, 1, 2, 3, 4 }.AsEnumerable();
-      var sequence = new[] { Range(2).Box(), Range(3).Box(), Range(5).Box() }.Seq();
-      var actual = sequence.Flatten().AsEnumerable();
+      var iterator = new[] { Range(2).Box(), Range(3).Box(), Range(5).Box() }.Iter();
+      var actual = iterator.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
 
@@ -173,10 +173,10 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
       var expected = Enumerable.Range(0, n);
 
       var actual = new List<int>();
-      var sequence = Range(n).Inspect(actual.Add);
+      var iterator = Range(n).Inspect(actual.Add);
       Assert.IsEmpty(actual);
 
-      while (sequence.Pop().HasValue) { }
+      while (iterator.Pop().HasValue) { }
 
       Assert.AreEqual(expected, actual);
    }
@@ -186,9 +186,9 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
       var expectedValue = offset;
       var expectedPosition = 0;
 
-      var sequence = Range(offset, n).Numerate();
+      var iterator = Range(offset, n).Numerate();
 
-      while (sequence.Pop() is (true, var (actualValue, actualPosition))) {
+      while (iterator.Pop() is (true, var (actualValue, actualPosition))) {
          Assert.AreEqual(expectedValue, actualValue);
          Assert.AreEqual(expectedPosition, actualPosition);
 
@@ -289,16 +289,7 @@ public abstract class TestSequence<TIterator> where TIterator: IIterator<int> {
 
    [TestCase(10, 17)] [TestCase(100, 177)] [TestCase(250, 227)]
    public void ConcatCount (int n1, int n2) {
-      var actual1 = Range(n1);
-      var actual2 = Range(n2);
       var actual = Range(n1).Concat(Range(n2));
-      if (actual1.Count.HasValue && actual2.Count.HasValue) {
-         Assert.True(actual.Count.HasValue);
-         Assert.AreEqual(n1 + n2, actual.Count.Value());
-      } else {
-         Assert.False(actual.Count.HasValue);
-      }
-
       Assert.AreEqual(n1 + n2, actual.Count());
    }
 }
