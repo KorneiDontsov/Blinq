@@ -1,25 +1,56 @@
 namespace Blinq;
 
+readonly struct OptionalCount {
+   const int NoValue = -1;
+
+   readonly int Value;
+
+   OptionalCount (int value) {
+      Value = value;
+   }
+
+   public bool Is (out int count) {
+      count = Value;
+      return count > NoValue;
+   }
+
+   public static OptionalCount operator -- (OptionalCount count) {
+      return count.Value > 0 ? new(count.Value - 1) : count;
+   }
+
+   public static OptionalCount Of<T> (IEnumerable<T> enumerable) {
+      return new(
+         enumerable switch {
+            ICollection<T> collection => collection.Count,
+            IReadOnlyCollection<T> collection => collection.Count,
+            _ => NoValue,
+         }
+      );
+   }
+
+   public static OptionalCount None => new(NoValue);
+}
+
 /// <inheritdoc />
 /// <summary>An <see cref="IEnumerator{T}" /> to <see cref="IIterator{T}" /> adapter.</summary>
 public struct EnumeratorIterator<T>: IIterator<T> {
    readonly IEnumerator<T> Enumerator;
-   int Count;
+   OptionalCount Count;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   internal EnumeratorIterator (IEnumerator<T> enumerator, int count) {
+   internal EnumeratorIterator (IEnumerator<T> enumerator, OptionalCount count) {
       Enumerator = enumerator;
       Count = count;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public EnumeratorIterator (IEnumerator<T> enumerator): this(enumerator, count: -1) { }
+   public EnumeratorIterator (IEnumerator<T> enumerator): this(enumerator, OptionalCount.None) { }
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool TryPop ([MaybeNullWhen(false)] out T item) {
       if (Enumerator.MoveNext()) {
-         if (Count > 0) --Count;
+         --Count;
          item = Enumerator.Current;
          return true;
       } else {
@@ -32,7 +63,7 @@ public struct EnumeratorIterator<T>: IIterator<T> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
       while (Enumerator.MoveNext()) {
-         if (Count > 0) --Count;
+         --Count;
          if (fold.Invoke(Enumerator.Current, ref seed)) break;
       }
 
@@ -42,22 +73,12 @@ public struct EnumeratorIterator<T>: IIterator<T> {
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool TryGetCount (out int count) {
-      count = Count;
-      return count >= 0;
+      return Count.Is(out count);
    }
 }
 
 [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
 public static partial class Iterator {
-   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   static int GetCount<T> (IEnumerable<T> enumerable) {
-      return enumerable switch {
-         ICollection<T> collection => collection.Count,
-         IReadOnlyCollection<T> collection => collection.Count,
-         _ => -1,
-      };
-   }
-
    /// <summary>
    ///    Creates a sequence over <paramref name="enumerable" />.
    ///    WARNING: The sequence never dispose the underlying enumerator.
@@ -65,7 +86,7 @@ public static partial class Iterator {
    /// </summary>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static Contract<IIterator<T>, EnumeratorIterator<T>> Iter<T> (this IEnumerable<T> enumerable) {
-      var count = GetCount(enumerable);
+      var count = OptionalCount.Of(enumerable);
       var enumerator = enumerable.GetEnumerator();
       return new EnumeratorIterator<T>(enumerator, count);
    }
@@ -77,7 +98,7 @@ public static partial class Iterator {
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static void Iter<T> (this IEnumerable<T> enumerable, Action<Contract<IIterator<T>, EnumeratorIterator<T>>> action) {
-      var count = GetCount(enumerable);
+      var count = OptionalCount.Of(enumerable);
       using var enumerator = enumerable.GetEnumerator();
       var iterator = new EnumeratorIterator<T>(enumerator, count);
       action(iterator);
@@ -90,7 +111,7 @@ public static partial class Iterator {
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static TResult Iter<T, TResult> (this IEnumerable<T> enumerable, Func<Contract<IIterator<T>, EnumeratorIterator<T>>, TResult> func) {
-      var count = GetCount(enumerable);
+      var count = OptionalCount.Of(enumerable);
       using var enumerator = enumerable.GetEnumerator();
       var iterator = new EnumeratorIterator<T>(enumerator, count);
       return func(iterator);
