@@ -11,12 +11,10 @@ sealed class IteratorAsEnumerable<T, TIterator>: IEnumerable<T> where TIterator:
    }
 
    public IEnumerator<T> GetEnumerator () {
-      if (Iterator.Is(out var iterator)) {
-         Iterator = Option.None;
-         return new IteratorEnumerator<T, TIterator>(iterator);
-      } else {
-         throw new InvalidOperationException("Iterator cannot be enumerated twice.");
-      }
+      if (!Iterator.HasValue) Throw.InvalidOperationException_IteratorIsNotAllowedToBeEnumeratedTwice();
+      var iterator = Iterator.OrDefault()!;
+      Iterator = Option.None;
+      return new IteratorEnumerator<T, TIterator>(iterator);
    }
 
    IEnumerator IEnumerable.GetEnumerator () {
