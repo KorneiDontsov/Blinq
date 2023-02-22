@@ -6,42 +6,42 @@ public interface ICompareCondition {
 }
 
 public static class CompareConditions {
-   public readonly struct Greater: ICompareCondition {
+   public sealed class Greater: ICompareCondition {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public static bool Compares (int compareResult) {
          return compareResult > 0;
       }
    }
 
-   public readonly struct Equal: ICompareCondition {
+   public sealed class Equal: ICompareCondition {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public static bool Compares (int compareResult) {
          return compareResult == 0;
       }
    }
 
-   public readonly struct Less: ICompareCondition {
+   public sealed class Less: ICompareCondition {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public static bool Compares (int compareResult) {
          return compareResult < 0;
       }
    }
 
-   public readonly struct GreaterOrEqual: ICompareCondition {
+   public sealed class GreaterOrEqual: ICompareCondition {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public static bool Compares (int compareResult) {
          return compareResult >= 0;
       }
    }
 
-   public readonly struct LessOrEqual: ICompareCondition {
+   public sealed class LessOrEqual: ICompareCondition {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public static bool Compares (int compareResult) {
          return compareResult <= 0;
       }
    }
 
-   public readonly struct NotEqual: ICompareCondition {
+   public sealed class NotEqual: ICompareCondition {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public static bool Compares (int compareResult) {
          return compareResult != 0;
