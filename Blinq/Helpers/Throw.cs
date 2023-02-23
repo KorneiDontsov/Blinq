@@ -7,7 +7,7 @@ static class Throw {
    }
 
    [MethodImpl(MethodImplOptions.NoInlining)]
-   static void InvalidOperationException_ConcurrentOperationsAreNotSupported () {
+   public static void InvalidOperationException_ConcurrentOperationsAreNotSupported () {
       throw new InvalidOperationException(Resources.InvalidOperationException_ConcurrentOperationsAreNotSupported);
    }
 }

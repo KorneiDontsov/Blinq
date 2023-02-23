@@ -34,6 +34,6 @@ public class SelectWhereBenchmarks {
 
    [Benchmark]
    public long Blinq_Select_Where_Sum () {
-      return Array.Iter().Select(Selector).Where(PostPredicate).Sum();
+      return Array.Iterate().Select(Selector).Where(PostPredicate).Sum();
    }
 }

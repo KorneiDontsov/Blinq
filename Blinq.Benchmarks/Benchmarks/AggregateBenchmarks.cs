@@ -34,6 +34,6 @@ public class AggregateBenchmarks {
 
    [Benchmark]
    public int Blinq_Aggregate () {
-      return Array.Iter().Aggregate(AccumulatorFunc).Value();
+      return Array.Iterate().Aggregate(AccumulatorFunc).Value();
    }
 }

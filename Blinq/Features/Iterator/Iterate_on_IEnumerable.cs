@@ -85,7 +85,7 @@ public static partial class Iterator {
    ///    If you want the enumerator guaranteed to be disposed then use overloads of this method.
    /// </summary>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Contract<IIterator<T>, EnumeratorIterator<T>> Iter<T> (this IEnumerable<T> enumerable) {
+   public static Contract<IIterator<T>, EnumeratorIterator<T>> Iterate<T> (this IEnumerable<T> enumerable) {
       var count = OptionalCount.Of(enumerable);
       var enumerator = enumerable.GetEnumerator();
       return new EnumeratorIterator<T>(enumerator, count);
@@ -97,7 +97,7 @@ public static partial class Iterator {
    ///    then disposes the underlying enumerator.
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static void Iter<T> (this IEnumerable<T> enumerable, Action<Contract<IIterator<T>, EnumeratorIterator<T>>> action) {
+   public static void Iterate<T> (this IEnumerable<T> enumerable, Action<Contract<IIterator<T>, EnumeratorIterator<T>>> action) {
       var count = OptionalCount.Of(enumerable);
       using var enumerator = enumerable.GetEnumerator();
       var iterator = new EnumeratorIterator<T>(enumerator, count);
@@ -110,7 +110,7 @@ public static partial class Iterator {
    ///    then disposes the underlying enumerator.
    /// </summary>
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static TResult Iter<T, TResult> (this IEnumerable<T> enumerable, Func<Contract<IIterator<T>, EnumeratorIterator<T>>, TResult> func) {
+   public static TResult Iterate<T, TResult> (this IEnumerable<T> enumerable, Func<Contract<IIterator<T>, EnumeratorIterator<T>>, TResult> func) {
       var count = OptionalCount.Of(enumerable);
       using var enumerator = enumerable.GetEnumerator();
       var iterator = new EnumeratorIterator<T>(enumerator, count);

@@ -28,12 +28,12 @@ public struct ValueVector<T>: IReadOnlyCollection<T>, ICollection<T>, IMutVector
       Size = array.Length;
    }
 
-   [Pure] public readonly int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Size; }
+   public readonly int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Size; }
 
    readonly bool ICollection<T>.IsReadOnly => false;
 
    public int Capacity {
-      [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] readonly get => Items.Length;
+      [MethodImpl(MethodImplOptions.AggressiveInlining)] readonly get => Items.Length;
       set {
          if (value < Size) Get.Throw<ArgumentOutOfRangeException>();
 
@@ -57,7 +57,7 @@ public struct ValueVector<T>: IReadOnlyCollection<T>, ICollection<T>, IMutVector
       }
    }
 
-   [Pure] public ref T this [Index index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref this[index.GetOffset(Size)]; }
+   public ref T this [Index index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref this[index.GetOffset(Size)]; }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public readonly T At (int index) {
@@ -81,7 +81,7 @@ public struct ValueVector<T>: IReadOnlyCollection<T>, ICollection<T>, IMutVector
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public readonly VectorIterator<T> Iter () {
+   public readonly VectorIterator<T> Iterate () {
       return new(Items, Size);
    }
 
@@ -91,11 +91,11 @@ public struct ValueVector<T>: IReadOnlyCollection<T>, ICollection<T>, IMutVector
    }
 
    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator () {
-      return LightEnumeratorWrap<T>.Create(GetEnumerator());
+      return CollectionEnumeratorBox<T>.Create(GetEnumerator());
    }
 
    readonly IEnumerator IEnumerable.GetEnumerator () {
-      return LightEnumeratorWrap<T>.Create(GetEnumerator());
+      return CollectionEnumeratorBox<T>.Create(GetEnumerator());
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -9,7 +9,7 @@ public readonly struct FuncSelector<TIn, TOut>: ISelector<TIn, TOut> {
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TOut Invoke (TIn item) {
-      return Func(item);
+   public TOut Invoke (TIn input) {
+      return Func(input);
    }
 }

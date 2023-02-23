@@ -121,7 +121,7 @@ public abstract class TestIterator<TIterator> where TIterator: IIterator<int> {
    [Test]
    public void FlattenOnEmptyItem () {
       var expected = Enumerable.Empty<int>();
-      var iterator = new[] { Range(0) }.Iter();
+      var iterator = new[] { Range(0) }.Iterate();
       var actual = iterator.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
@@ -129,7 +129,7 @@ public abstract class TestIterator<TIterator> where TIterator: IIterator<int> {
    [Test]
    public void FlattenOnSingleItem () {
       var expected = new[] { 0 }.AsEnumerable();
-      var iterator = new[] { Range(1) }.Iter();
+      var iterator = new[] { Range(1) }.Iterate();
       var actual = iterator.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
@@ -137,7 +137,7 @@ public abstract class TestIterator<TIterator> where TIterator: IIterator<int> {
    [Test]
    public void FlattenOnMultipleItems () {
       var expected = new[] { 0, 1, 0, 1, 2, 0, 1, 2, 3, 4 }.AsEnumerable();
-      var iterator = new[] { Range(2), Range(3), Range(5) }.Iter();
+      var iterator = new[] { Range(2), Range(3), Range(5) }.Iterate();
       var actual = iterator.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }
@@ -145,7 +145,7 @@ public abstract class TestIterator<TIterator> where TIterator: IIterator<int> {
    [Test]
    public void FlattenOnMultipleItemsWithSingleFold () {
       var expected = 14;
-      var iterator = new[] { Range(2), Range(3), Range(5) }.Iter();
+      var iterator = new[] { Range(2), Range(3), Range(5) }.Iterate();
       var actual = iterator.Flatten().Sum();
       Assert.AreEqual(expected, actual);
    }
@@ -153,7 +153,7 @@ public abstract class TestIterator<TIterator> where TIterator: IIterator<int> {
    [Test]
    public void FlattenOnBoxedItems () {
       var expected = new[] { 0, 1, 0, 1, 2, 0, 1, 2, 3, 4 }.AsEnumerable();
-      var iterator = new[] { Range(2).Box(), Range(3).Box(), Range(5).Box() }.Iter();
+      var iterator = new[] { Range(2).Box(), Range(3).Box(), Range(5).Box() }.Iterate();
       var actual = iterator.Flatten().AsEnumerable();
       Assert.AreEqual(expected, actual);
    }

@@ -11,11 +11,9 @@ public abstract class Vector<T>: IReadOnlyCollection<T>, ICollection<T> {
       Value = value;
    }
 
-   [Pure] public int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.Count; }
-
-   [Pure] public T this [int index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.At(index); }
-
-   [Pure] public T this [Index index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.At(index); }
+   public int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.Count; }
+   public T this [int index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.At(index); }
+   public T this [Index index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.At(index); }
 
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,8 +32,8 @@ public abstract class Vector<T>: IReadOnlyCollection<T>, ICollection<T> {
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public VectorIterator<T> Iter () {
-      return Value.Iter();
+   public VectorIterator<T> Iterate () {
+      return Value.Iterate();
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -44,11 +42,11 @@ public abstract class Vector<T>: IReadOnlyCollection<T>, ICollection<T> {
    }
 
    IEnumerator<T> IEnumerable<T>.GetEnumerator () {
-      return LightEnumeratorWrap<T>.Create(GetEnumerator());
+      return CollectionEnumeratorBox<T>.Create(GetEnumerator());
    }
 
    IEnumerator IEnumerable.GetEnumerator () {
-      return LightEnumeratorWrap<T>.Create(GetEnumerator());
+      return CollectionEnumeratorBox<T>.Create(GetEnumerator());
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

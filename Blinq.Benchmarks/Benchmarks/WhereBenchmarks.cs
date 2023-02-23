@@ -33,6 +33,6 @@ public class WhereBenchmarks {
 
    [Benchmark]
    public long Blinq_Where_Sum () {
-      return Array.Iter().Where(Predicate).Sum();
+      return Array.Iterate().Where(Predicate).Sum();
    }
 }

@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 namespace Blinq.Collections;
 
 [StructLayout(LayoutKind.Sequential)]
-struct TableCell<TEntry> where TEntry: notnull {
+struct TableCell<T> {
    public int HashCode;
    public TableIndex Next;
    public TableIndex Previous;
-   public TEntry Entry;
+   public T Entry;
 }

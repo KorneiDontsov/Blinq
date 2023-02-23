@@ -1,6 +1,6 @@
 namespace Blinq.Collections;
 
-public struct VectorEnumerator<T>: ILightEnumerator<T> {
+public struct VectorEnumerator<T>: ICollectionEnumerator<T> {
    readonly T[] Items;
    readonly int Size;
    int Index;

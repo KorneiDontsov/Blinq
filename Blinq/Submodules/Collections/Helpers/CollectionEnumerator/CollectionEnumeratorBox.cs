@@ -2,11 +2,11 @@ using System.Collections;
 
 namespace Blinq.Collections;
 
-sealed class LightEnumeratorWrap<T, TLightEnumerator>: IEnumerator<T> where TLightEnumerator: ILightEnumerator<T> {
+sealed class CollectionEnumeratorBox<T, TLightEnumerator>: IEnumerator<T> where TLightEnumerator: ICollectionEnumerator<T> {
    TLightEnumerator Enumerator;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public LightEnumeratorWrap (TLightEnumerator enumerator) {
+   public CollectionEnumeratorBox (TLightEnumerator enumerator) {
       Enumerator = enumerator;
    }
 
@@ -25,10 +25,10 @@ sealed class LightEnumeratorWrap<T, TLightEnumerator>: IEnumerator<T> where TLig
    public void Dispose () { }
 }
 
-static class LightEnumeratorWrap<T> {
+static class CollectionEnumeratorBox<T> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static LightEnumeratorWrap<T, TLightEnumerator> Create<TLightEnumerator> (TLightEnumerator enumerator)
-   where TLightEnumerator: ILightEnumerator<T> {
+   public static CollectionEnumeratorBox<T, TLightEnumerator> Create<TLightEnumerator> (TLightEnumerator enumerator)
+   where TLightEnumerator: ICollectionEnumerator<T> {
       return new(enumerator);
    }
 }

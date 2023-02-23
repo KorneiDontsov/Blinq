@@ -2,78 +2,83 @@ using System.Collections;
 
 namespace Blinq.Collections;
 
-public struct ValueTable<TEntry, TKey, TKeyEqualer>: IReadOnlyCollection<TEntry>, ICollection<TEntry>
-where TEntry: ITableEntry<TKey>
+public struct ValueTable<T, TKey, TKeyEqualer, TKeySelector>: IReadOnlyCollection<T>, ICollection<T>
 where TKey: notnull
+where TKeySelector: ITableKeySelector<T, TKey>
 where TKeyEqualer: IEqualityComparer<TKey> {
-   internal TableBucket[] Buckets;
-   internal TableCell<TEntry>[] Cells;
-   internal int Size;
-   internal int FreeSize;
-   internal TableIndex FreeListIndex = TableIndex.None;
-   internal TablePredefinedCapacity PredefinedCapacity;
+   internal ValueTableImpl<T> Impl = new();
    internal readonly TKeyEqualer KeyEqualer;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ValueTable (TKeyEqualer keyEqualer) {
       KeyEqualer = keyEqualer;
-      Buckets = Array.Empty<TableBucket>();
-      Cells = Array.Empty<TableCell<TEntry>>();
    }
 
-   public readonly int Count { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Size - FreeSize; }
+   public readonly int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Impl.Count; }
+
+   public int Capacity {
+      [MethodImpl(MethodImplOptions.AggressiveInlining)] readonly get => Impl.Capacity;
+      [MethodImpl(MethodImplOptions.AggressiveInlining)] set => Impl.Capacity = value;
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly TableIterator<T> Iterate () {
+      return new(Impl.Iterate<T, ISelectOutputOfTableIterator<T>>());
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly CollectionEnumerator<T, TableIterator<T>> GetEnumerator () {
+      return Impl.GetEnumerator();
+   }
+
+   readonly IEnumerator<T> IEnumerable<T>.GetEnumerator () {
+      return GetEnumerator().Box();
+   }
+
+   readonly IEnumerator IEnumerable.GetEnumerator () {
+      return GetEnumerator().Box();
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly void CopyTo (Span<T> destination) {
+      Impl.CopyTo(destination);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly void CopyTo (T[] array, int arrayIndex) {
+      Impl.CopyTo(array, arrayIndex);
+   }
 
    [Pure]
-   public readonly TableEnumerator<TEntry> GetEnumerator () {
-      return new(Cells, Size);
-   }
-
-   IEnumerator<TEntry> IEnumerable<TEntry>.GetEnumerator () {
-      return LightEnumeratorWrap<TEntry>.Create(GetEnumerator());
-   }
-
-   IEnumerator IEnumerable.GetEnumerator () {
-      return LightEnumeratorWrap<TEntry>.Create(GetEnumerator());
-   }
-
-   readonly void ICollection<TEntry>.CopyTo (TEntry[] array, int arrayIndex) {
-      if ((uint)arrayIndex > (uint)array.Length || array.Length - arrayIndex < Count) Get.Throw<ArgumentOutOfRangeException>();
-
-      foreach (ref var cell in Cells.AsSpan(0, Size)) {
-         if (cell.Previous.IsDefined) array[arrayIndex++] = cell.Entry;
-      }
-   }
-
-   [Pure]
-   public bool Contains<TEqualer> (TEntry entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<TEntry> {
-      var match = this.MatchImpl(entry.Key);
+   public bool Contains<TEqualer> (T entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<T> {
+      var match = TableEntryMatchImpl<T>.Create(ref this, TKeySelector.SelectKey(entry));
       return match.HasEntry && entryEqualer.Equals(entry, match.Entry);
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Contains<TEqualer> (TEntry entry, ProvideEqualer<TEntry, TEqualer> provideEntryEqualer) where TEqualer: IEqualityComparer<TEntry> {
+   public bool Contains<TEqualer> (T entry, ProvideEqualer<T, TEqualer> provideEntryEqualer) where TEqualer: IEqualityComparer<T> {
       return Contains(entry, provideEntryEqualer());
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Contains (TEntry entry) {
-      return Contains(entry, Get<TEntry>.Equaler.Default());
+   public bool Contains (T entry) {
+      return Contains(entry, Get<T>.Equaler.Default());
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool TryAdd (TEntry entry) {
-      return this.MatchImpl(entry.Key).TryAdd(entry);
+   public bool TryAdd (T entry) {
+      return TableEntryMatchImpl<T>.Create(ref this, TKeySelector.SelectKey(entry)).TryAdd(entry);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public void Add (TEntry entry) {
-      var match = this.MatchImpl(entry.Key);
+   public void Add (T entry) {
+      var match = TableEntryMatchImpl<T>.Create(ref this, TKeySelector.SelectKey(entry));
       if (match.HasEntry) Get.Throw<ArgumentException>();
       match.DoAdd(entry);
    }
 
-   public bool Remove<TEqualer> (TEntry entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<TEntry> {
-      var match = this.MatchImpl(entry.Key);
+   public bool Remove<TEqualer> (T entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<T> {
+      var match = TableEntryMatchImpl<T>.Create(ref this, TKeySelector.SelectKey(entry));
       if (match.HasEntry && entryEqualer.Equals(entry, match.Entry)) {
          match.DoRemove();
          return true;
@@ -83,94 +88,221 @@ where TKeyEqualer: IEqualityComparer<TKey> {
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Remove<TEqualer> (TEntry entry, ProvideEqualer<TEntry, TEqualer> provideEqualer) where TEqualer: IEqualityComparer<TEntry> {
+   public bool Remove<TEqualer> (T entry, ProvideEqualer<T, TEqualer> provideEqualer) where TEqualer: IEqualityComparer<T> {
       return Remove(entry, provideEqualer());
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool Remove (TEntry entry) {
-      return Remove(entry, Get<TEntry>.Equaler.Default());
+   public bool Remove (T entry) {
+      return Remove(entry, Get<T>.Equaler.Default());
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Clear () {
-      Array.Clear(Buckets);
-      if (RuntimeHelpers.IsReferenceOrContainsReferences<TEntry>()) Array.Clear(Cells, 0, Size);
-      Size = 0;
-      FreeSize = 0;
-      FreeListIndex = TableIndex.None;
-   }
-
-   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   internal readonly ref TableBucket GetBucket (int hashCode) {
-      var buckets = Buckets;
-      return ref buckets[(uint)hashCode % (uint)buckets.Length];
-   }
-
-   void Resize (int newCapacity) {
-      var oldCells = Cells;
-      var newCells = new TableCell<TEntry>[newCapacity];
-
-      int count;
-      var oldIndex = 0;
-      var newIndex = 0;
-      var freeListIndex = FreeListIndex;
-
-      while (freeListIndex.HasValue) {
-         count = freeListIndex - oldIndex;
-         Array.Copy(oldCells, oldIndex, newCells, newIndex, count);
-
-         oldIndex = freeListIndex + 1;
-         newIndex += count;
-         freeListIndex = oldCells[freeListIndex].Next;
-      }
-
-      count = Size - oldIndex;
-      Array.Copy(oldCells, oldIndex, newCells, newIndex, count);
-      var size = newIndex + count;
-
-      Cells = newCells;
-      Size = size;
-      FreeSize = 0;
-      FreeListIndex = TableIndex.None;
-
-      Buckets = new TableBucket[newCapacity];
-
-      var index = 0;
-      foreach (ref var cell in newCells.AsSpan(0, size)) {
-         if (cell.Previous.IsDefined) {
-            ref var bucket = ref GetBucket(cell.HashCode);
-            int nextIndex = bucket;
-            bucket = index;
-            cell.Next = nextIndex;
-            cell.Previous = TableIndex.None;
-            if ((uint)nextIndex < (uint)newCells.Length) newCells[nextIndex].Previous = index;
-         }
-
-         ++index;
-      }
-   }
-
-   public int Capacity {
-      [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] readonly get => Buckets.Length;
-      [MethodImpl(MethodImplOptions.AggressiveInlining)] set {
-         if (value < Count) Get.Throw<ArgumentOutOfRangeException>();
-         if (value != Buckets.Length) {
-            PredefinedCapacity = TablePredefinedCapacity.None;
-            Resize(value);
-         }
-      }
-   }
-
-   [MethodImpl(MethodImplOptions.NoInlining)]
-   internal void Grow () {
-      var newCapacity = PredefinedCapacity.Grow(Buckets.Length);
-      Resize(newCapacity);
+      Impl.Clear();
    }
 
    #region ICollection
-   readonly bool ICollection<TEntry>.IsReadOnly => false;
+   readonly bool ICollection<T>.IsReadOnly => false;
 
-   void ICollection<TEntry>.Add (TEntry item) {
+   void ICollection<T>.Add (T item) {
+      _ = TryAdd(item);
+   }
+   #endregion
+}
+
+public struct ValueTable<T, TKey, TKeyEqualer>: IReadOnlyCollection<T>, ICollection<T>
+where T: ITableKeySelector<T, TKey>
+where TKey: notnull
+where TKeyEqualer: IEqualityComparer<TKey> {
+   internal ValueTable<T, TKey, TKeyEqualer, T> Impl;
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public ValueTable (TKeyEqualer keyEqualer) {
+      Impl = new(keyEqualer);
+   }
+
+   public readonly int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Impl.Count; }
+
+   public int Capacity {
+      [MethodImpl(MethodImplOptions.AggressiveInlining)] readonly get => Impl.Capacity;
+      [MethodImpl(MethodImplOptions.AggressiveInlining)] set => Impl.Capacity = value;
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly TableIterator<T> Iterate () {
+      return Impl.Iterate();
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly CollectionEnumerator<T, TableIterator<T>> GetEnumerator () {
+      return Impl.GetEnumerator();
+   }
+
+   readonly IEnumerator<T> IEnumerable<T>.GetEnumerator () {
+      return GetEnumerator().Box();
+   }
+
+   readonly IEnumerator IEnumerable.GetEnumerator () {
+      return GetEnumerator().Box();
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly void CopyTo (Span<T> destination) {
+      Impl.CopyTo(destination);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly void CopyTo (T[] array, int arrayIndex) {
+      Impl.CopyTo(array, arrayIndex);
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Contains<TEqualer> (T entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<T> {
+      return Impl.Contains(entry, entryEqualer);
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Contains<TEqualer> (T entry, ProvideEqualer<T, TEqualer> provideEntryEqualer) where TEqualer: IEqualityComparer<T> {
+      return Impl.Contains(entry, provideEntryEqualer);
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Contains (T entry) {
+      return Impl.Contains(entry);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryAdd (T entry) {
+      return Impl.TryAdd(entry);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void Add (T entry) {
+      Impl.Add(entry);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Remove<TEqualer> (T entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<T> {
+      return Impl.Remove(entry, entryEqualer);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Remove<TEqualer> (T entry, ProvideEqualer<T, TEqualer> provideEqualer) where TEqualer: IEqualityComparer<T> {
+      return Impl.Remove(entry, provideEqualer);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Remove (T entry) {
+      return Impl.Remove(entry);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void Clear () {
+      Impl.Clear();
+   }
+
+   #region ICollection
+   readonly bool ICollection<T>.IsReadOnly => false;
+
+   void ICollection<T>.Add (T item) {
+      _ = TryAdd(item);
+   }
+   #endregion
+}
+
+public struct ValueTable<T, TKey>: IReadOnlyCollection<T>, ICollection<T>
+where T: ITableKeySelector<T, TKey>
+where TKey: notnull {
+   internal ValueTable<T, TKey, DefaultEqualer<TKey>, T> Impl = new(keyEqualer: new());
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public ValueTable () { }
+
+   public readonly int Count { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Impl.Count; }
+
+   public int Capacity {
+      [MethodImpl(MethodImplOptions.AggressiveInlining)] readonly get => Impl.Capacity;
+      [MethodImpl(MethodImplOptions.AggressiveInlining)] set => Impl.Capacity = value;
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly TableIterator<T> Iterate () {
+      return Impl.Iterate();
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly CollectionEnumerator<T, TableIterator<T>> GetEnumerator () {
+      return Impl.GetEnumerator();
+   }
+
+   readonly IEnumerator<T> IEnumerable<T>.GetEnumerator () {
+      return GetEnumerator().Box();
+   }
+
+   readonly IEnumerator IEnumerable.GetEnumerator () {
+      return GetEnumerator().Box();
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly void CopyTo (Span<T> destination) {
+      Impl.CopyTo(destination);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public readonly void CopyTo (T[] array, int arrayIndex) {
+      Impl.CopyTo(array, arrayIndex);
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Contains<TEqualer> (T entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<T> {
+      return Impl.Contains(entry, entryEqualer);
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Contains<TEqualer> (T entry, ProvideEqualer<T, TEqualer> provideEntryEqualer) where TEqualer: IEqualityComparer<T> {
+      return Impl.Contains(entry, provideEntryEqualer);
+   }
+
+   [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Contains (T entry) {
+      return Impl.Contains(entry);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool TryAdd (T entry) {
+      return Impl.TryAdd(entry);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void Add (T entry) {
+      Impl.Add(entry);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Remove<TEqualer> (T entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<T> {
+      return Impl.Remove(entry, entryEqualer);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Remove<TEqualer> (T entry, ProvideEqualer<T, TEqualer> provideEqualer) where TEqualer: IEqualityComparer<T> {
+      return Impl.Remove(entry, provideEqualer);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public bool Remove (T entry) {
+      return Impl.Remove(entry);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void Clear () {
+      Impl.Clear();
+   }
+
+   #region ICollection
+   readonly bool ICollection<T>.IsReadOnly => false;
+
+   void ICollection<T>.Add (T item) {
       _ = TryAdd(item);
    }
    #endregion

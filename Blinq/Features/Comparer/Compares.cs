@@ -50,12 +50,12 @@ public static class CompareConditions {
 }
 
 public static class CompareCondition {
-   [Pure] public static Type<CompareConditions.Greater> Greater => default;
-   [Pure] public static Type<CompareConditions.Equal> Equal => default;
-   [Pure] public static Type<CompareConditions.Less> Less => default;
-   [Pure] public static Type<CompareConditions.GreaterOrEqual> GreaterOrEqual => default;
-   [Pure] public static Type<CompareConditions.LessOrEqual> LessOrEqual => default;
-   [Pure] public static Type<CompareConditions.NotEqual> NotEqual => default;
+   public static Type<CompareConditions.Greater> Greater => default;
+   public static Type<CompareConditions.Equal> Equal => default;
+   public static Type<CompareConditions.Less> Less => default;
+   public static Type<CompareConditions.GreaterOrEqual> GreaterOrEqual => default;
+   public static Type<CompareConditions.LessOrEqual> LessOrEqual => default;
+   public static Type<CompareConditions.NotEqual> NotEqual => default;
 }
 
 public static partial class Comparers {

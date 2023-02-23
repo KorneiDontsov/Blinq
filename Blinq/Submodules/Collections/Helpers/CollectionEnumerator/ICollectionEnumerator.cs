@@ -1,6 +1,6 @@
 namespace Blinq.Collections;
 
-interface ILightEnumerator<T> {
+interface ICollectionEnumerator<T> {
    T Current { get; }
    bool MoveNext ();
 }

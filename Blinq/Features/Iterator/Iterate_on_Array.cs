@@ -1,21 +1,21 @@
 namespace Blinq;
 
 /// <inheritdoc />
-/// <summary>A string iterator.</summary>
-public struct StringIterator: IIterator<char> {
-   readonly string Str;
+/// <summary>An array iterator.</summary>
+public struct ArrayIterator<T>: IIterator<T> {
+   readonly T[] Array;
    int Index;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   internal StringIterator (string str) {
-      Str = str;
+   public ArrayIterator (T[] array) {
+      Array = array;
    }
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public bool TryPop (out char item) {
-      if (Index < Str.Length) {
-         item = Str[Index++];
+   public bool TryPop ([MaybeNullWhen(false)] out T item) {
+      if (Index < Array.Length) {
+         item = Array[Index++];
          return true;
       } else {
          item = default;
@@ -25,8 +25,8 @@ public struct StringIterator: IIterator<char> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<char, TAccumulator> {
-      foreach (var item in Str.AsSpan(Index)) {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+      foreach (var item in Array.AsSpan(Index)) {
          ++Index;
          if (fold.Invoke(item, ref seed)) break;
       }
@@ -37,14 +37,15 @@ public struct StringIterator: IIterator<char> {
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool TryGetCount (out int count) {
-      count = Str.Length - Index;
+      count = Array.Length - Index;
       return true;
    }
 }
 
 public static partial class Iterator {
+   /// <summary>Creates a sequence over <paramref name="array" />.</summary>
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Contract<IIterator<char>, StringIterator> Iter (this string str) {
-      return new StringIterator(str);
+   public static Contract<IIterator<T>, ArrayIterator<T>> Iterate<T> (this T[] array) {
+      return new ArrayIterator<T>(array);
    }
 }

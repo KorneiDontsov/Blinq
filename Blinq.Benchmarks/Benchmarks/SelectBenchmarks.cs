@@ -33,6 +33,6 @@ public class SelectBenchmarks {
 
    [Benchmark]
    public long Blinq_Select_Sum () {
-      return Array.Iter().Select(Selector).Sum();
+      return Array.Iterate().Select(Selector).Sum();
    }
 }

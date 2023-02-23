@@ -22,7 +22,7 @@ public static class CollectPolicies {
 }
 
 public static class CollectPolicy {
-   [Pure] public static Type<CollectPolicies.AddOrSkip> AddOrSkip => default;
-   [Pure] public static Type<CollectPolicies.AddOrReplace> AddOrReplace => default;
-   [Pure] public static Type<CollectPolicies.AddOrThrow> AddOrThrow => default;
+   public static Type<CollectPolicies.AddOrSkip> AddOrSkip => default;
+   public static Type<CollectPolicies.AddOrReplace> AddOrReplace => default;
+   public static Type<CollectPolicies.AddOrThrow> AddOrThrow => default;
 }

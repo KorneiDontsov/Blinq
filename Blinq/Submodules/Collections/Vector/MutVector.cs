@@ -10,13 +10,13 @@ public sealed class MutVector<T>: Vector<T>, ICollection<T>, IMutVectorInternal<
    bool ICollection<T>.IsReadOnly => false;
 
    public int Capacity {
-      [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.Capacity;
+      [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Value.Capacity;
       [MethodImpl(MethodImplOptions.AggressiveInlining)] set => Value.Capacity = value;
    }
 
-   [Pure] public new ref T this [int index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref Value[index]; }
+   public new ref T this [int index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref Value[index]; }
 
-   [Pure] public new ref T this [Index index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref Value[index]; }
+   public new ref T this [Index index] { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref Value[index]; }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public Span<T> AsSpan () {
