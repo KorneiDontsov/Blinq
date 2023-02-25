@@ -132,4 +132,17 @@ struct ValueTableImpl<T> {
       var newCapacity = PredefinedCapacity.Grow(Buckets.Length);
       Resize(newCapacity);
    }
+
+   [MethodImpl(MethodImplOptions.NoInlining)]
+   void Grow (int minCapacity) {
+      var newCapacity = PredefinedCapacity.Grow(Buckets.Length);
+      if (newCapacity < minCapacity) newCapacity = PredefinedCapacity.Apply(minCapacity);
+      Resize(newCapacity);
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void EnsureCapacity (int minCapacity) {
+      if (minCapacity < 0) Get.Throw<ArgumentOutOfRangeException>();
+      if (minCapacity > Buckets.Length) Grow(minCapacity);
+   }
 }

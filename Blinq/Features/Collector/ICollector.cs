@@ -1,7 +1,7 @@
 namespace Blinq;
 
 public interface ICollector<T, TCollection> {
-   int Capacity { set; }
+   void EnsureCapacity (int minCapacity);
    void Add (T item);
    TCollection Build ();
 }

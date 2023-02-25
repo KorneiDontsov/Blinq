@@ -10,7 +10,7 @@ public ref struct MapEntryMatch<TKey, TValue> where TKey: notnull {
       Key = key;
    }
 
-   public readonly bool HasEntry { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Impl.HasEntry; }
+   public readonly bool EntryIsPresent { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Impl.EntryIsPresent; }
    public readonly TKey EntryKey { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Impl.EntryRef.Key; }
    public readonly ref TValue EntryValue { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref Impl.EntryRef.Value; }
 
@@ -26,7 +26,7 @@ public ref struct MapEntryMatch<TKey, TValue> where TKey: notnull {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool TryAdd (TValue value) {
-      if (Impl.HasEntry) {
+      if (Impl.EntryIsPresent) {
          return false;
       } else {
          DoAdd(value);
@@ -36,7 +36,7 @@ public ref struct MapEntryMatch<TKey, TValue> where TKey: notnull {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void AddOrReplace (TValue value) {
-      if (Impl.HasEntry) {
+      if (Impl.EntryIsPresent) {
          Impl.EntryRef.Value = value;
       } else {
          DoAdd(value);

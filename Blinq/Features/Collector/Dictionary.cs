@@ -22,7 +22,10 @@ where TPolicy: IDictionaryCollectPolicy {
       ValueSelector = valueSelector;
    }
 
-   public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] set => Dictionary.EnsureCapacity(value); }
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void EnsureCapacity (int minCapacity) {
+      Dictionary.EnsureCapacity(minCapacity);
+   }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Add (T item) {

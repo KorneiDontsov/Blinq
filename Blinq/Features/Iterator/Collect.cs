@@ -11,6 +11,15 @@ where TCollector: ICollector<T, TCollection> {
 
 public static partial class Iterator {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   internal static TCollection Collect<T, TIterator, TCollection, TCollector> (ref TIterator iterator, ref TCollector collector)
+   where TIterator: IIterator<T>
+   where TCollector: ICollector<T, TCollection> {
+      if (iterator.TryGetCount(out var count)) collector.EnsureCapacity(count);
+      collector = iterator.Fold(collector, new CollectFold<T, TCollection, TCollector>());
+      return collector.Build();
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static TCollection Collect<T, TIterator, TCollection, TCollector> (
       this in Contract<IIterator<T>, TIterator> iterator,
       Contract<ICollector<T, TCollection>, TCollector> collector
@@ -19,9 +28,7 @@ public static partial class Iterator {
    where TCollector: ICollector<T, TCollection> {
       var iter = iterator.Value;
       var coll = collector.Value;
-      if (iter.TryGetCount(out var count)) coll.Capacity = count;
-      coll = iter.Fold(coll, new CollectFold<T, TCollection, TCollector>());
-      return coll.Build();
+      return Collect<T, TIterator, TCollection, TCollector>(ref iter, ref coll);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

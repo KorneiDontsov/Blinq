@@ -9,7 +9,9 @@ public readonly struct ListCollector<T>: ICollector<T, List<T>> {
    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] set => List.Capacity = value; }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public void Finalize (ref List<T> builder) { }
+   public void EnsureCapacity (int minCapacity) {
+      List.Capacity = minCapacity;
+   }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Add (T item) {

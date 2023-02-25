@@ -41,7 +41,7 @@ struct TablePredefinedCapacity {
 
    int Number;
 
-   int Apply (int minCapacity) {
+   public int Apply (int minCapacity) {
       if ((uint)minCapacity < MaxValue) {
          var number = 1;
          foreach (var value in Values) {

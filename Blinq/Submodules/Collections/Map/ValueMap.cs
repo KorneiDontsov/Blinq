@@ -5,7 +5,7 @@ namespace Blinq.Collections;
 public struct ValueMap<TKey, TValue, TKeyEqualer>: IReadOnlyDictionary<TKey, TValue>, IDictionary<TKey, TValue>
 where TKey: notnull
 where TKeyEqualer: IEqualityComparer<TKey> {
-   internal ValueTable<MapEntry<TKey, TValue>, TKey, TKeyEqualer, MapEntry<TKey, TValue>> Table;
+   internal ValueTable<MapEntry<TKey, TValue>, TKey, TKeyEqualer, IMapKeySelector<TKey, TValue>> Table;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ValueMap (TKeyEqualer keyEqualer) {
@@ -17,7 +17,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
    public TValue this [TKey key] {
       [MethodImpl(MethodImplOptions.AggressiveInlining)] get {
          var match = this.Match(key);
-         if (!match.HasEntry) Get.Throw<KeyNotFoundException>();
+         if (!match.EntryIsPresent) Get.Throw<KeyNotFoundException>();
          return match.EntryValue;
       }
       [MethodImpl(MethodImplOptions.AggressiveInlining)] set => this.Match(key).AddOrReplace(value);
@@ -43,13 +43,13 @@ where TKeyEqualer: IEqualityComparer<TKey> {
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool ContainsKey (TKey key) {
-      return this.Match(key).HasEntry;
+      return this.Match(key).EntryIsPresent;
    }
 
    [Pure]
    public bool Contains<TValueEqualer> (TKey key, TValue value, TValueEqualer valueEqualer) where TValueEqualer: IEqualityComparer<TValue> {
       var match = this.Match(key);
-      return match.HasEntry && valueEqualer.Equals(value, match.EntryValue);
+      return match.EntryIsPresent && valueEqualer.Equals(value, match.EntryValue);
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,7 +66,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool TryGetValue (TKey key, [MaybeNullWhen(false)] out TValue value) {
       var match = this.Match(key);
-      if (match.HasEntry) {
+      if (match.EntryIsPresent) {
          value = match.EntryValue;
          return true;
       } else {
@@ -104,7 +104,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Add (TKey key, TValue value) {
       var match = this.Match(key);
-      if (match.HasEntry) Get.Throw<ArgumentException>();
+      if (match.EntryIsPresent) Get.Throw<ArgumentException>();
       match.DoAdd(value);
    }
 
@@ -120,7 +120,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
 
    public bool Remove<TValueEqualer> (TKey key, TValue value, TValueEqualer valueEqualer) where TValueEqualer: IEqualityComparer<TValue> {
       var match = this.Match(key);
-      if (match.HasEntry && valueEqualer.Equals(value, match.EntryValue)) {
+      if (match.EntryIsPresent && valueEqualer.Equals(value, match.EntryValue)) {
          match.DoRemove();
          return true;
       } else {

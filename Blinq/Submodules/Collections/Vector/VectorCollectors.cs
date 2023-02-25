@@ -9,6 +9,11 @@ public struct ValueVectorCollector<T>: ICollector<T, ValueVector<T>> {
    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] set => Vector.Capacity = value; }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void EnsureCapacity (int minCapacity) {
+      Vector.Capacity = minCapacity;
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Add (T item) {
       Vector.Add(item);
    }
@@ -25,7 +30,10 @@ public struct ImmVectorCollector<T>: ICollector<T, ImmVector<T>> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ImmVectorCollector () { }
 
-   public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] set => Vector.Capacity = value; }
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void EnsureCapacity (int minCapacity) {
+      Vector.Capacity = minCapacity;
+   }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Add (T item) {
@@ -44,7 +52,10 @@ public struct MutVectorCollector<T>: ICollector<T, MutVector<T>> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public MutVectorCollector () { }
 
-   public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] set => Vector.Capacity = value; }
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void EnsureCapacity (int minCapacity) {
+      Vector.Capacity = minCapacity;
+   }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Add (T item) {

@@ -52,7 +52,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
    [Pure]
    public bool Contains<TEqualer> (T entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<T> {
       var match = TableEntryMatchImpl<T>.Create(ref this, TKeySelector.SelectKey(entry));
-      return match.HasEntry && entryEqualer.Equals(entry, match.Entry);
+      return match.EntryIsPresent && entryEqualer.Equals(entry, match.Entry);
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -73,13 +73,13 @@ where TKeyEqualer: IEqualityComparer<TKey> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Add (T entry) {
       var match = TableEntryMatchImpl<T>.Create(ref this, TKeySelector.SelectKey(entry));
-      if (match.HasEntry) Get.Throw<ArgumentException>();
+      if (match.EntryIsPresent) Get.Throw<ArgumentException>();
       match.DoAdd(entry);
    }
 
    public bool Remove<TEqualer> (T entry, TEqualer entryEqualer) where TEqualer: IEqualityComparer<T> {
       var match = TableEntryMatchImpl<T>.Create(ref this, TKeySelector.SelectKey(entry));
-      if (match.HasEntry && entryEqualer.Equals(entry, match.Entry)) {
+      if (match.EntryIsPresent && entryEqualer.Equals(entry, match.Entry)) {
          match.DoRemove();
          return true;
       } else {
@@ -100,6 +100,11 @@ where TKeyEqualer: IEqualityComparer<TKey> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Clear () {
       Impl.Clear();
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void EnsureCapacity (int minCapacity) {
+      Impl.EnsureCapacity(minCapacity);
    }
 
    #region ICollection
@@ -202,6 +207,11 @@ where TKeyEqualer: IEqualityComparer<TKey> {
       Impl.Clear();
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void EnsureCapacity (int minCapacity) {
+      Impl.EnsureCapacity(minCapacity);
+   }
+
    #region ICollection
    readonly bool ICollection<T>.IsReadOnly => false;
 
@@ -297,6 +307,11 @@ where TKey: notnull {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Clear () {
       Impl.Clear();
+   }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void EnsureCapacity (int minCapacity) {
+      Impl.EnsureCapacity(minCapacity);
    }
 
    #region ICollection

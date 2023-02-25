@@ -8,7 +8,10 @@ public struct ArrayCollector<T>: ICollector<T, T[]> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ArrayCollector () { }
 
-   public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] set => Vector.Capacity = value; }
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void EnsureCapacity (int minCapacity) {
+      Vector.Capacity = minCapacity;
+   }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Add (T item) {

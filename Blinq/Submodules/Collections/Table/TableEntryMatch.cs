@@ -8,7 +8,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
    readonly ref readonly TKeyEqualer KeyEqualer = ref Unsafe.NullRef<TKeyEqualer>();
    public TKey Key { get; }
 
-   public readonly bool HasEntry { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Impl.HasEntry; }
+   public readonly bool EntryIsPresent { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Impl.EntryIsPresent; }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    internal TableEntryMatch (ref ValueTable<T, TKey, TKeyEqualer, TKeySelector> table, TKey key) {

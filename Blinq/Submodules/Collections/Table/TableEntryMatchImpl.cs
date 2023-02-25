@@ -45,16 +45,16 @@ ref struct TableEntryMatchImpl<T> {
       return match;
    }
 
-   public readonly bool HasEntry { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => !Unsafe.IsNullRef(ref Cell); }
+   public readonly bool EntryIsPresent { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => !Unsafe.IsNullRef(ref Cell); }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public readonly void CheckExists () {
-      if (!HasEntry) Get.Throw<InvalidOperationException>();
+      if (!EntryIsPresent) Get.Throw<InvalidOperationException>();
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public readonly void CheckNotExists () {
-      if (HasEntry) Get.Throw<InvalidOperationException>();
+      if (EntryIsPresent) Get.Throw<InvalidOperationException>();
    }
 
    public readonly ref T EntryRef {
@@ -100,7 +100,7 @@ ref struct TableEntryMatchImpl<T> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool TryAdd (T entry) {
-      if (HasEntry) {
+      if (EntryIsPresent) {
          return false;
       } else {
          DoAdd(entry);
@@ -110,7 +110,7 @@ ref struct TableEntryMatchImpl<T> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void AddOrReplace (T entry) {
-      if (HasEntry) {
+      if (EntryIsPresent) {
          Cell.Entry = entry;
       } else {
          DoAdd(entry);
@@ -148,7 +148,7 @@ ref struct TableEntryMatchImpl<T> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool TryRemove () {
-      if (HasEntry) {
+      if (EntryIsPresent) {
          DoRemove();
          return true;
       } else {

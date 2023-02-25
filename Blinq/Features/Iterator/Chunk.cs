@@ -23,7 +23,7 @@ where TIterator: IIterator<T> {
          return false;
       } else {
          var collector = ProvideCollector().Value;
-         collector.Capacity = Size;
+         collector.EnsureCapacity(Size);
          var collectFold = new CollectFold<T, TCollection, TCollector>();
          var takeThenCollectFold = new TakeFold<T, TCollector, CollectFold<T, TCollection, TCollector>>(collectFold);
          (collector, var countLeft) = Iterator.Fold((collector, Size), takeThenCollectFold);
