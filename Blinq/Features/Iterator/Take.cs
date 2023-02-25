@@ -40,12 +40,12 @@ public struct TakeIterator<T, TIterator>: IIterator<T> where TIterator: IIterato
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
       if (TakeCount > 0) {
-         (seed, TakeCount) = Iterator.Fold((seed, TakeCount), new TakeFold<T, TAccumulator, TFold>(fold));
+         (accumulator, TakeCount) = Iterator.Fold((seed: accumulator, TakeCount), new TakeFold<T, TAccumulator, TFold>(fold));
       }
 
-      return seed;
+      return accumulator;
    }
 
    /// <inheritdoc />

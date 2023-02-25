@@ -28,10 +28,10 @@ where TIterator2: IIterator<T> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
       if (!IsInitialized) Initialize();
-      (seed, Set) = Iterator1.Fold((seed, Set), new DistinctFold<T, TAccumulator, TEqualer, TFold>(fold));
-      return seed;
+      (accumulator, Set) = Iterator1.Fold((seed: accumulator, Set), new DistinctFold<T, TAccumulator, TEqualer, TFold>(fold));
+      return accumulator;
    }
 
    /// <inheritdoc />

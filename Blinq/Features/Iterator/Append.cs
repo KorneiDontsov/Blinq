@@ -28,16 +28,16 @@ public struct AppendIterator<T, TIterator>: IIterator<T> where TIterator: IItera
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
       if (!Appended) {
-         (seed, var interrupted) = Iterator.Fold((Accumulator: seed, Interrupted: false), new InterruptingFold<T, TAccumulator, TFold>(fold));
+         (accumulator, var interrupted) = Iterator.Fold((accumulator, Interrupted: false), new InterruptingFold<T, TAccumulator, TFold>(fold));
          if (!interrupted) {
-            _ = fold.Invoke(Element, ref seed);
+            _ = fold.Invoke(Element, ref accumulator);
             Appended = true;
          }
       }
 
-      return seed;
+      return accumulator;
    }
 
    /// <inheritdoc />

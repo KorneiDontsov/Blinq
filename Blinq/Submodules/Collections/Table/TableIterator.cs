@@ -14,8 +14,8 @@ public struct TableIterator<T>: IIterator<T> {
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
-      return Impl.Fold(seed, fold);
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
+      return Impl.Fold(accumulator, fold);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

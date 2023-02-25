@@ -60,8 +60,8 @@ where TIterator: IIterator<T> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
-      return Iterator.Fold(seed, new WhereFold<T, TAccumulator, TPredicate, TFold>(Predicate, fold));
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
+      return Iterator.Fold(accumulator, new WhereFold<T, TAccumulator, TPredicate, TFold>(Predicate, fold));
    }
 
    /// <inheritdoc />

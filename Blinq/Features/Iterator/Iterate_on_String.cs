@@ -25,13 +25,13 @@ public struct StringIterator: IIterator<char> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<char, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<char, TAccumulator> {
       foreach (var item in Str.AsSpan(Index)) {
          ++Index;
-         if (fold.Invoke(item, ref seed)) break;
+         if (fold.Invoke(item, ref accumulator)) break;
       }
 
-      return seed;
+      return accumulator;
    }
 
    /// <inheritdoc />

@@ -29,13 +29,13 @@ public struct RangeIterator<T>: IIterator<T> where T: IIncrementOperators<T> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
       while (Count > 0) {
          --Count;
-         if (fold.Invoke(Current++, ref seed)) break;
+         if (fold.Invoke(Current++, ref accumulator)) break;
       }
 
-      return seed;
+      return accumulator;
    }
 
    /// <inheritdoc />

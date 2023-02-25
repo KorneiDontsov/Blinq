@@ -30,17 +30,17 @@ struct TableIteratorImpl<TEntry, TOut, TSelectOutput>: IIterator<TOut> where TSe
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TOut, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<TOut, TAccumulator> {
       foreach (ref var cell in Cells.AsSpan(Index, Size)) {
          ++Index;
          if (!cell.Previous.IsDefined) {
             --FreeCount;
-         } else if (fold.Invoke(TSelectOutput.Invoke(cell.Entry), ref seed)) {
+         } else if (fold.Invoke(TSelectOutput.Invoke(cell.Entry), ref accumulator)) {
             break;
          }
       }
 
-      return seed;
+      return accumulator;
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

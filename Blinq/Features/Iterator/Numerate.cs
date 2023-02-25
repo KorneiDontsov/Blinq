@@ -38,10 +38,10 @@ public struct NumerateIterator<T, TIterator>: IIterator<NumeratedItem<T>> where 
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold)
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold)
    where TFold: IFold<NumeratedItem<T>, TAccumulator> {
-      (seed, Position) = Iterator.Fold((seed, Position), new NumerateFold<T, TAccumulator, TFold>(fold));
-      return seed;
+      (accumulator, Position) = Iterator.Fold((seed: accumulator, Position), new NumerateFold<T, TAccumulator, TFold>(fold));
+      return accumulator;
    }
 
    /// <inheritdoc />

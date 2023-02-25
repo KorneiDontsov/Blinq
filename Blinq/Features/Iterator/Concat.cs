@@ -25,13 +25,13 @@ where TIterator2: IIterator<TOut> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold)
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold)
    where TFold: IFold<TOut, TAccumulator> {
       if (OnIterator1) {
-         (seed, OnIterator1) = Iterator1.Fold((seed, false), new InterruptingFold<TOut, TAccumulator, TFold>(fold));
+         (accumulator, OnIterator1) = Iterator1.Fold((seed: accumulator, false), new InterruptingFold<TOut, TAccumulator, TFold>(fold));
       }
 
-      return OnIterator1 ? seed : Iterator2.Fold(seed, fold);
+      return OnIterator1 ? accumulator : Iterator2.Fold(accumulator, fold);
    }
 
    /// <inheritdoc />

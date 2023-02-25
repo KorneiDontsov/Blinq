@@ -25,13 +25,13 @@ public struct RepeatIterator<T>: IIterator<T> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
       while (Count > 0) {
          --Count;
-         if (fold.Invoke(Item, ref seed)) break;
+         if (fold.Invoke(Item, ref accumulator)) break;
       }
 
-      return seed;
+      return accumulator;
    }
 
    /// <inheritdoc />

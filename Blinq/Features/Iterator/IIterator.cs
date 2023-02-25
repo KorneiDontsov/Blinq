@@ -8,12 +8,12 @@ public interface IIterator<T> {
    /// <summary>
    ///    Applies a function as long as it returns <see langword="false" />, producing a single, final value.
    /// </summary>
-   /// <param name="seed">Initial value of accumulator.</param>
+   /// <param name="accumulator">Initial value of accumulator.</param>
    /// <param name="fold">A function to invoke on every iteration as long as it returns <see langword="false" />.</param>
    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
    /// <typeparam name="TFold">The type of the accumulator function.</typeparam>
    /// <returns>The final accumulator value.</returns>
-   TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator>;
+   TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator>;
 
    [Pure] bool TryGetCount (out int count);
 }

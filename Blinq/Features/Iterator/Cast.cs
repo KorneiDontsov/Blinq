@@ -57,8 +57,8 @@ where TFromIterator: IIterator<TFrom> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TTo, TAccumulator> {
-      return FromIterator.Fold(seed, new CastUpFold<TFrom, TAccumulator, TTo, TFold>(fold));
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<TTo, TAccumulator> {
+      return FromIterator.Fold(accumulator, new CastUpFold<TFrom, TAccumulator, TTo, TFold>(fold));
    }
 
    /// <inheritdoc />
@@ -92,8 +92,8 @@ where TFromIterator: IIterator<TFrom> {
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TTo, TAccumulator> {
-      return FromIterator.Fold(seed, new CastDownFold<TFrom, TAccumulator, TTo, TFold>(fold));
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<TTo, TAccumulator> {
+      return FromIterator.Fold(accumulator, new CastDownFold<TFrom, TAccumulator, TTo, TFold>(fold));
    }
 
    /// <inheritdoc />

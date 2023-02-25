@@ -50,18 +50,18 @@ where TOutIterator: IIterator<TOut> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TOut, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<TOut, TAccumulator> {
       var interruptingFold = new InterruptingFold<TOut, TAccumulator, TFold>(fold);
       if (Interrupted) {
-         (seed, Interrupted) = OutIterator.Fold((seed, Interrupted: false), interruptingFold);
+         (accumulator, Interrupted) = OutIterator.Fold((seed: accumulator, Interrupted: false), interruptingFold);
       }
 
       if (!Interrupted) {
          var flattenFold = new FlattenFold<TOut, TAccumulator, TFold, TOutIterator>(interruptingFold);
-         (seed, OutIterator, Interrupted) = InIterator.Fold((seed, default(TOutIterator)!, Interrupted: false), flattenFold);
+         (accumulator, OutIterator, Interrupted) = InIterator.Fold((seed: accumulator, default(TOutIterator)!, Interrupted: false), flattenFold);
       }
 
-      return seed;
+      return accumulator;
    }
 
    /// <inheritdoc />

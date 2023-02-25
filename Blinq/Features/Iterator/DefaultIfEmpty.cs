@@ -43,26 +43,26 @@ public struct DefaultIfEmptyIterator<T, TIterator>: IIterator<T> where TIterator
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
       switch (Position) {
          case DefaultIfEmptyIteratorPosition.Start when Iterator.TryPop(out var first): {
             Position = DefaultIfEmptyIteratorPosition.Middle;
-            if (fold.Invoke(first, ref seed)) {
-               return seed;
+            if (fold.Invoke(first, ref accumulator)) {
+               return accumulator;
             } else {
                goto case DefaultIfEmptyIteratorPosition.Middle;
             }
          }
          case DefaultIfEmptyIteratorPosition.Start: {
             Position = DefaultIfEmptyIteratorPosition.End;
-            _ = fold.Invoke(DefaultValue, ref seed);
-            return seed;
+            _ = fold.Invoke(DefaultValue, ref accumulator);
+            return accumulator;
          }
          case DefaultIfEmptyIteratorPosition.Middle: {
-            return Iterator.Fold(seed, fold);
+            return Iterator.Fold(accumulator, fold);
          }
          default: {
-            return seed;
+            return accumulator;
          }
       }
    }

@@ -35,10 +35,10 @@ where TIterator: IIterator<T> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TCollection, TAccumulator> {
-      while (TryPop(out var item) && !fold.Invoke(item, ref seed)) { }
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<TCollection, TAccumulator> {
+      while (TryPop(out var item) && !fold.Invoke(item, ref accumulator)) { }
 
-      return seed;
+      return accumulator;
    }
 
    /// <inheritdoc />

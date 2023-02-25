@@ -52,10 +52,10 @@ where TZipper: IZipper<TIn1, TIn2, TOut> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TOut, TAccumulator> {
-      (seed, Iterator2) =
-         Iterator1.Fold((seed, Iterator2), new ZipFold<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TFold>(Zipper, fold));
-      return seed;
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<TOut, TAccumulator> {
+      (accumulator, Iterator2) =
+         Iterator1.Fold((seed: accumulator, Iterator2), new ZipFold<TIn1, TAccumulator, TIn2, TOut, TZipper, TIn2Iterator, TFold>(Zipper, fold));
+      return accumulator;
    }
 
    /// <inheritdoc />

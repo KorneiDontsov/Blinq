@@ -33,9 +33,9 @@ where TIterator: IIterator<T> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
-      (seed, Set) = Iterator.Fold((seed, Set), new DistinctFold<T, TAccumulator, TEqualer, TFold>(fold));
-      return seed;
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
+      (accumulator, Set) = Iterator.Fold((seed: accumulator, Set), new DistinctFold<T, TAccumulator, TEqualer, TFold>(fold));
+      return accumulator;
    }
 
    /// <inheritdoc />

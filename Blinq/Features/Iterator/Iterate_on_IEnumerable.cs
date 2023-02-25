@@ -61,13 +61,13 @@ public struct EnumeratorIterator<T>: IIterator<T> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
       while (Enumerator.MoveNext()) {
          --Count;
-         if (fold.Invoke(Enumerator.Current, ref seed)) break;
+         if (fold.Invoke(Enumerator.Current, ref accumulator)) break;
       }
 
-      return seed;
+      return accumulator;
    }
 
    /// <inheritdoc />

@@ -26,13 +26,13 @@ public struct PrependIterator<T, TIterator>: IIterator<T> where TIterator: IIter
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
       if (!Prepended) {
          Prepended = true;
-         if (fold.Invoke(Element, ref seed)) return seed;
+         if (fold.Invoke(Element, ref accumulator)) return accumulator;
       }
 
-      return Iterator.Fold(seed, fold);
+      return Iterator.Fold(accumulator, fold);
    }
 
    /// <inheritdoc />

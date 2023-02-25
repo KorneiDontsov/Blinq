@@ -14,8 +14,8 @@ public struct MapIterator<TKey, TValue>: IIterator<KeyValuePair<TKey, TValue>> w
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<KeyValuePair<TKey, TValue>, TAccumulator> {
-      return Impl.Fold(seed, fold);
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<KeyValuePair<TKey, TValue>, TAccumulator> {
+      return Impl.Fold(accumulator, fold);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

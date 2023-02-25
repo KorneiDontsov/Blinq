@@ -46,8 +46,8 @@ where TInIterator: IIterator<TIn> {
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<TOut, TAccumulator> {
-      return InIterator.Fold(seed, new SelectFold<TIn, TAccumulator, TOut, TSelector, TFold>(Selector, fold));
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<TOut, TAccumulator> {
+      return InIterator.Fold(accumulator, new SelectFold<TIn, TAccumulator, TOut, TSelector, TFold>(Selector, fold));
    }
 
    /// <inheritdoc />

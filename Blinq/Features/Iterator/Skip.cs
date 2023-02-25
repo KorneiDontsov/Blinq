@@ -36,9 +36,9 @@ public struct SkipIterator<T, TIterator>: IIterator<T> where TIterator: IIterato
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
       EnsureSkipped();
-      return Iterator.Fold(seed, fold);
+      return Iterator.Fold(accumulator, fold);
    }
 
    /// <inheritdoc />

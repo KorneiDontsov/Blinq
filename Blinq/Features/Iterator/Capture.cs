@@ -58,9 +58,9 @@ public struct CaptureIterator<T, TCapture, TIterator>: IIterator<ItemWithCapture
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold)
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold)
    where TFold: IFold<ItemWithCapture<T, TCapture>, TAccumulator> {
-      return Iterator.Fold(seed, new CaptureFold<T, TAccumulator, TCapture, TFold>(Capture, fold));
+      return Iterator.Fold(accumulator, new CaptureFold<T, TAccumulator, TCapture, TFold>(Capture, fold));
    }
 
    /// <inheritdoc />

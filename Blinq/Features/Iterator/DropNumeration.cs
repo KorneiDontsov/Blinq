@@ -37,8 +37,8 @@ public struct DropNumerationIterator<T, TIterator>: IIterator<T> where TIterator
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
-      return Iterator.Fold(seed, new DropNumerationFold<T, TAccumulator, TFold>(fold));
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
+      return Iterator.Fold(accumulator, new DropNumerationFold<T, TAccumulator, TFold>(fold));
    }
 
    /// <inheritdoc />

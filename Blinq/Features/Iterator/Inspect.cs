@@ -41,8 +41,8 @@ public struct InspectIterator<T, TIterator>: IIterator<T> where TIterator: IIter
 
    /// <inheritdoc />
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator seed, TFold fold) where TFold: IFold<T, TAccumulator> {
-      return Iterator.Fold(seed, new InspectFold<T, TAccumulator, TFold>(Action, fold));
+   public TAccumulator Fold<TAccumulator, TFold> (TAccumulator accumulator, TFold fold) where TFold: IFold<T, TAccumulator> {
+      return Iterator.Fold(accumulator, new InspectFold<T, TAccumulator, TFold>(Action, fold));
    }
 
    /// <inheritdoc />
