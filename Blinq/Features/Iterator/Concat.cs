@@ -1,13 +1,13 @@
 namespace Blinq;
 
-public struct ConcatIterator<TOut, TIterator1, TIterator2>: IIterator<TOut>
-where TIterator1: IIterator<TOut>
-where TIterator2: IIterator<TOut> {
-   TIterator1 Iterator1;
-   TIterator2 Iterator2;
+public struct ConcatIterator<TOut, T1Iterator, T2Iterator>: IIterator<TOut>
+where T1Iterator: IIterator<TOut>
+where T2Iterator: IIterator<TOut> {
+   T1Iterator Iterator1;
+   T2Iterator Iterator2;
    bool OnIterator1 = true;
 
-   public ConcatIterator (TIterator1 iterator1, TIterator2 iterator2) {
+   public ConcatIterator (T1Iterator iterator1, T2Iterator iterator2) {
       Iterator1 = iterator1;
       Iterator2 = iterator2;
    }
@@ -49,12 +49,12 @@ where TIterator2: IIterator<TOut> {
 
 public static partial class Iterator {
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Contract<IIterator<T>, ConcatIterator<T, TIterator1, TIterator2>> Concat<T, TIterator1, TIterator2> (
-      this in Contract<IIterator<T>, TIterator1> iterator1,
-      in Contract<IIterator<T>, TIterator2> iterator2
+   public static Contract<IIterator<T>, ConcatIterator<T, T1Iterator, T2Iterator>> Concat<T, T1Iterator, T2Iterator> (
+      this in Contract<IIterator<T>, T1Iterator> iterator1,
+      in Contract<IIterator<T>, T2Iterator> iterator2
    )
-   where TIterator1: IIterator<T>
-   where TIterator2: IIterator<T> {
-      return new ConcatIterator<T, TIterator1, TIterator2>(iterator1, iterator2);
+   where T1Iterator: IIterator<T>
+   where T2Iterator: IIterator<T> {
+      return new ConcatIterator<T, T1Iterator, T2Iterator>(iterator1, iterator2);
    }
 }
