@@ -1,10 +1,10 @@
 namespace Blinq.Collections;
 
 public struct TableIterator<T>: IIterator<T> {
-   TableIteratorImpl<T, T, ISelectOutputOfTableIterator<T>> Impl;
+   TableIteratorImpl<T, T, SelectOutputOfTableIterator<T>> Impl;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   internal TableIterator (TableIteratorImpl<T, T, ISelectOutputOfTableIterator<T>> impl) {
+   internal TableIterator (TableIteratorImpl<T, T, SelectOutputOfTableIterator<T>> impl) {
       Impl = impl;
    }
 

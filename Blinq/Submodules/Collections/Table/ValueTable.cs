@@ -23,7 +23,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public readonly TableIterator<T> Iterate () {
-      return new(Impl.Iterate<T, ISelectOutputOfTableIterator<T>>());
+      return new(Impl.Iterate<T, SelectOutputOfTableIterator<T>>());
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]

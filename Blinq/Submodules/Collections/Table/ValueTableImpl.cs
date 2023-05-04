@@ -21,7 +21,7 @@ struct ValueTableImpl<T> {
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public readonly TableIterator<T> Iterate () {
-      return new(Iterate<T, ISelectOutputOfTableIterator<T>>());
+      return new(Iterate<T, SelectOutputOfTableIterator<T>>());
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -44,7 +44,7 @@ struct ValueTableImpl<T> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public readonly void CopyTo (Span<T> destination) {
-      CopyTo<T, ISelectOutputOfTableIterator<T>>(destination);
+      CopyTo<T, SelectOutputOfTableIterator<T>>(destination);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

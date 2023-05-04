@@ -5,17 +5,19 @@ where TKey: notnull
 where TKeySelector: ITableKeySelector<T, TKey>
 where TKeyEqualer: IEqualityComparer<TKey> {
    TableEntryMatchImpl<T> Impl;
-   readonly ref readonly TKeyEqualer KeyEqualer = ref Unsafe.NullRef<TKeyEqualer>();
+   readonly ref readonly TKeyEqualer KeyEqualer;
    public TKey Key { get; }
 
    public readonly bool EntryIsPresent { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Impl.EntryIsPresent; }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   #pragma warning disable CS8618
    internal TableEntryMatch (ref ValueTable<T, TKey, TKeyEqualer, TKeySelector> table, TKey key) {
       Impl = TableEntryMatchImpl<T>.Create(ref table, key);
       KeyEqualer = ref table.KeyEqualer;
       Key = key;
    }
+   #pragma warning restore CS8618
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    readonly void CheckEntry (in T entry) {

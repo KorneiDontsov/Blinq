@@ -2,8 +2,8 @@ namespace Blinq.Collections;
 
 ref struct TableEntryMatchImpl<T> {
    readonly ref ValueTableImpl<T> Table;
-   ref TableBucket Bucket = ref Unsafe.NullRef<TableBucket>();
-   ref TableCell<T> Cell = ref Unsafe.NullRef<TableCell<T>>();
+   ref TableBucket Bucket;
+   ref TableCell<T> Cell;
    readonly int HashCode;
    int CellIndex;
 
@@ -11,6 +11,8 @@ ref struct TableEntryMatchImpl<T> {
    public TableEntryMatchImpl (ref ValueTableImpl<T> table, int hashCode) {
       Table = table;
       HashCode = hashCode;
+      Bucket = ref Unsafe.NullRef<TableBucket>();
+      Cell = ref Unsafe.NullRef<TableCell<T>>();
    }
 
    public static TableEntryMatchImpl<T> Create<TKey, TKeyEqualer, TKeySelector> (

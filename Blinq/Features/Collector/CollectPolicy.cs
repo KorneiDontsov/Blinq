@@ -1,20 +1,20 @@
 namespace Blinq;
 
 public static class CollectPolicies {
-   public sealed class AddOrSkip: IDictionaryCollectPolicy {
+   public readonly struct AddOrSkip: IDictionaryCollectPolicy {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public static void Add<TKey, TValue> (Dictionary<TKey, TValue> dictionary, TKey key, TValue value) where TKey: notnull {
          _ = dictionary.TryAdd(key, value);
       }
    }
 
-   public sealed class AddOrReplace: IDictionaryCollectPolicy {
+   public readonly struct AddOrReplace: IDictionaryCollectPolicy {
       public static void Add<TKey, TValue> (Dictionary<TKey, TValue> dictionary, TKey key, TValue value) where TKey: notnull {
          dictionary[key] = value;
       }
    }
 
-   public sealed class AddOrThrow: IDictionaryCollectPolicy {
+   public readonly struct AddOrThrow: IDictionaryCollectPolicy {
       public static void Add<TKey, TValue> (Dictionary<TKey, TValue> dictionary, TKey key, TValue value) where TKey: notnull {
          dictionary.Add(key, value);
       }

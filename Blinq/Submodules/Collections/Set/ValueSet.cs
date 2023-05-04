@@ -3,7 +3,7 @@ namespace Blinq.Collections;
 public struct ValueSet<T, TEqualer>
 where T: notnull
 where TEqualer: IEqualityComparer<T> {
-   internal ValueTable<T, T, TEqualer, ISetKeySelector<T>> Table;
+   internal ValueTable<T, T, TEqualer, SetKeySelector<T>> Table;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ValueSet (TEqualer equaler) {

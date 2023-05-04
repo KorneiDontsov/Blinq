@@ -1,10 +1,10 @@
 namespace Blinq.Collections;
 
 public struct MapIterator<TKey, TValue>: IIterator<KeyValuePair<TKey, TValue>> where TKey: notnull {
-   TableIteratorImpl<MapEntry<TKey, TValue>, KeyValuePair<TKey, TValue>, ISelectOutputOfMapIterator<TKey, TValue>> Impl;
+   TableIteratorImpl<MapEntry<TKey, TValue>, KeyValuePair<TKey, TValue>, SelectOutputOfMapIterator<TKey, TValue>> Impl;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   internal MapIterator (TableIteratorImpl<MapEntry<TKey, TValue>, KeyValuePair<TKey, TValue>, ISelectOutputOfMapIterator<TKey, TValue>> impl) {
+   internal MapIterator (TableIteratorImpl<MapEntry<TKey, TValue>, KeyValuePair<TKey, TValue>, SelectOutputOfMapIterator<TKey, TValue>> impl) {
       Impl = impl;
    }
 

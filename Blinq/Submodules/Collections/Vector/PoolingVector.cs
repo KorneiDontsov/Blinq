@@ -10,7 +10,7 @@ interface IPoolingVectorTrait<T, TRaw> {
    [Pure] static abstract Span<T> AsSpan (TRaw[] items, int size);
 }
 
-sealed class ReferencePoolingVectorTrait<T>: IPoolingVectorTrait<T, object?> {
+readonly struct ReferencePoolingVectorTrait<T>: IPoolingVectorTrait<T, object?> {
    public static bool ClearArray => true;
    public static int ItemSize => 1;
 
@@ -25,7 +25,7 @@ sealed class ReferencePoolingVectorTrait<T>: IPoolingVectorTrait<T, object?> {
    }
 }
 
-sealed class UnmanagedPoolingVectorTrait<T>: IPoolingVectorTrait<T, byte> {
+readonly struct UnmanagedPoolingVectorTrait<T>: IPoolingVectorTrait<T, byte> {
    public static bool ClearArray => false;
    public static int ItemSize => Unsafe.SizeOf<T>();
 

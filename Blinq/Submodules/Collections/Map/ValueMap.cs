@@ -5,7 +5,7 @@ namespace Blinq.Collections;
 public struct ValueMap<TKey, TValue, TKeyEqualer>: IReadOnlyDictionary<TKey, TValue>, IDictionary<TKey, TValue>
 where TKey: notnull
 where TKeyEqualer: IEqualityComparer<TKey> {
-   internal ValueTable<MapEntry<TKey, TValue>, TKey, TKeyEqualer, IMapKeySelector<TKey, TValue>> Table;
+   internal ValueTable<MapEntry<TKey, TValue>, TKey, TKeyEqualer, MapKeySelector<TKey, TValue>> Table;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ValueMap (TKeyEqualer keyEqualer) {
@@ -25,7 +25,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public readonly MapIterator<TKey, TValue> Iterate () {
-      return new(Table.Impl.Iterate<KeyValuePair<TKey, TValue>, ISelectOutputOfMapIterator<TKey, TValue>>());
+      return new(Table.Impl.Iterate<KeyValuePair<TKey, TValue>, SelectOutputOfMapIterator<TKey, TValue>>());
    }
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -77,7 +77,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public readonly void CopyTo (Span<KeyValuePair<TKey, TValue>> destination) {
-      Table.Impl.CopyTo<KeyValuePair<TKey, TValue>, ISelectOutputOfMapIterator<TKey, TValue>>(destination);
+      Table.Impl.CopyTo<KeyValuePair<TKey, TValue>, SelectOutputOfMapIterator<TKey, TValue>>(destination);
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,7 +87,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    internal readonly TKey[] CopyKeys () {
-      return Table.Impl.ToArray<TKey, ISelectOutputOfMapKeysIterator<TKey, TValue>>();
+      return Table.Impl.ToArray<TKey, SelectOutputOfMapKeysIterator<TKey, TValue>>();
    }
 
    readonly IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => CopyKeys(); }
@@ -95,7 +95,7 @@ where TKeyEqualer: IEqualityComparer<TKey> {
 
    [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)]
    internal readonly TValue[] CopyValues () {
-      return Table.Impl.ToArray<TValue, ISelectOutputOfMapValuesIterator<TKey, TValue>>();
+      return Table.Impl.ToArray<TValue, SelectOutputOfMapValuesIterator<TKey, TValue>>();
    }
 
    readonly IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => CopyValues(); }
