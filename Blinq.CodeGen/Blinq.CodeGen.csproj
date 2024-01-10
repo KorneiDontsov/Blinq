@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>11</LangVersion>
+        <Nullable>enable</Nullable>
+        <Version Condition="'$(Version)'==''">0.0.0</Version>
+        <Optimize>False</Optimize>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <OutputPath>bin</OutputPath>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(OutputPath)\$(AssemblyName).pdb" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+    <Target Name="SetupPackage" AfterTargets="Pack" Condition="'$(IsPackable)' == 'true'">
+        <Copy SourceFiles="$(PackageOutputPath)/$(PackageId).$(PackageVersion).symbols.nupkg" DestinationFiles="../NuGet/LocalPackages/$(PackageId).$(PackageVersion).nupkg" />
+    </Target>
+</Project>
