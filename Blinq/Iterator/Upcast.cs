@@ -9,8 +9,7 @@ where TImpl: IIteratorVisitor<TOut, TState> {
 
    public bool Visit (ref TState state, in TIn item) {
       ref readonly var outItem = ref Unsafe.As<TIn, TOut>(ref Unsafe.AsRef(in item));
-      impl.Visit(ref state, in outItem);
-      return false;
+      return this.impl.Visit(ref state, in outItem);
    }
 }
 
