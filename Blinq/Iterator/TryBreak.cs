@@ -6,7 +6,7 @@ where TImpl: IIteratorVisitor<T, TState> {
    public required TImpl impl { get; init; }
 
    public bool Visit (ref (TState coreState, bool hasBreak) state, in T item) {
-      var result = impl.Visit(ref state.coreState, in item);
+      var result = this.impl.Visit(ref state.coreState, in item);
       state.hasBreak = result;
       return result;
    }

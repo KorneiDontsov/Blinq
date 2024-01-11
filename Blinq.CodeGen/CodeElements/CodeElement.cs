@@ -8,7 +8,7 @@ abstract record CodeElement {
    public sealed override string ToString () {
       var code = new ValueStringBuilder(stackalloc char[512]);
       try {
-         AppendTo(ref code, new CodeGenContext());
+         this.AppendTo(ref code, new CodeGenContext());
          return code.ToString();
       } finally {
          code.Dispose();

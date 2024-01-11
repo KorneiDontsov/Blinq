@@ -8,8 +8,8 @@ sealed record TypeParameterConstraint: CodeElement {
 
    public override void AppendTo (ref ValueStringBuilder code, in CodeGenContext context) {
       code.Append("where ");
-      typeParameter.AppendTo(ref code, in context);
+      this.typeParameter.AppendTo(ref code, in context);
       code.Append(": ");
-      constraintTypes.AppendAllTo(ref code, in context);
+      this.constraintTypes.AppendAllTo(ref code, in context);
    }
 }

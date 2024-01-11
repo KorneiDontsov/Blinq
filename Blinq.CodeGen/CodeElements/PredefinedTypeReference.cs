@@ -6,6 +6,6 @@ sealed record PredefinedTypeReference: TypeReference {
    public required string name { get; init; }
 
    public override void AppendTo (ref ValueStringBuilder code, in CodeGenContext context) {
-      code.Append(name);
+      code.Append(this.name);
    }
 }

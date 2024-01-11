@@ -7,6 +7,6 @@ sealed record TypeParameter: TypeReference {
    public required ITypeParameterSymbol symbol { get; init; }
 
    public override void AppendTo (ref ValueStringBuilder code, in CodeGenContext context) {
-      code.Append(symbol.Name);
+      code.Append(this.symbol.Name);
    }
 }

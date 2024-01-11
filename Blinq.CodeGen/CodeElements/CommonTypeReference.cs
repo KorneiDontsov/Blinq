@@ -7,6 +7,6 @@ sealed record CommonTypeReference: TypeReference {
    public required ITypeSymbol symbol { get; init; }
 
    public override void AppendTo (ref ValueStringBuilder code, in CodeGenContext context) {
-      symbol.AppendFullQualifiedNameTo(ref code, in context);
+      this.symbol.AppendFullQualifiedNameTo(ref code, in context);
    }
 }

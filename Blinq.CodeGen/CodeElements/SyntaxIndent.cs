@@ -28,21 +28,23 @@ readonly struct SyntaxIndent {
    }
 
    SyntaxIndent (uint value) {
-      str = value < (uint)indentStrings.Length ? indentStrings[value] : CreateIndentString(value);
+      this.str = value < (uint)indentStrings.Length
+         ? indentStrings[value]
+         : CreateIndentString(value);
       this.value = value;
    }
 
    public static SyntaxIndent none => new(string.Empty, 0);
 
    public SyntaxIndent Child () {
-      return new(value + 1);
+      return new(this.value + 1);
    }
 
    public void AppendTo (ref ValueStringBuilder code) {
-      code.Append(str);
+      code.Append(this.str);
    }
 
    public override string ToString () {
-      return str;
+      return this.str;
    }
 }

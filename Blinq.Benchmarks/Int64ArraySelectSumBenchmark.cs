@@ -13,8 +13,8 @@ public class Int64ArraySelectSumBenchmark {
    [Benchmark(Baseline = true)]
    public long For () {
       long sum = 0;
-      for (var index = 0; index < array.Length; index++) {
-         var number = array[index];
+      for (var index = 0; index < this.array.Length; index++) {
+         var number = this.array[index];
          checked {
             sum += number * number;
          }
@@ -26,7 +26,7 @@ public class Int64ArraySelectSumBenchmark {
    [Benchmark]
    public long ForEach () {
       long sum = 0;
-      foreach (var number in array) {
+      foreach (var number in this.array) {
          checked {
             sum += number * number;
          }
@@ -37,11 +37,11 @@ public class Int64ArraySelectSumBenchmark {
 
    [Benchmark]
    public long Linq () {
-      return array.Select(number => number * number).Sum();
+      return this.array.Select(number => number * number).Sum();
    }
 
    [Benchmark]
    public long Blinq () {
-      return array.Iterate().Select(number => number * number).Sum();
+      return this.array.Iterate().Select(number => number * number).Sum();
    }
 }

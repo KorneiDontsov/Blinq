@@ -11,16 +11,16 @@ public readonly partial struct Option<T> {
    internal readonly T? _value;
    internal readonly bool _hasValue;
 
-   public bool hasValue => _hasValue;
+   public bool hasValue => this._hasValue;
 
    public T value {
       internal get {
-         Assert.Debug(hasValue);
-         return _value!;
+         Assert.Debug(this.hasValue);
+         return this._value!;
       }
       init {
-         _value = value;
-         _hasValue = true;
+         this._value = value;
+         this._hasValue = true;
       }
    }
 }
@@ -138,7 +138,7 @@ public readonly partial struct Option<T>: IEquatable<Option<T>> {
    }
 
    public override int GetHashCode () {
-      return hasValue ? _value!.GetHashCode() : 0;
+      return this.hasValue ? this._value!.GetHashCode() : 0;
    }
 
 

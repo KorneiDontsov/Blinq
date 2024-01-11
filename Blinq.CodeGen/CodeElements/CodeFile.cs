@@ -13,16 +13,16 @@ sealed record CodeFile {
       try {
          var context = new CodeGenContext {
             indent = SyntaxIndent.none,
-            currentNamespace = @namespace,
+            currentNamespace = this.@namespace,
          };
 
-         if (@namespace is { IsGlobalNamespace: false }) {
+         if (this.@namespace is { IsGlobalNamespace: false }) {
             code.Append("namespace ");
-            @namespace.AppendFullQualifiedNameTo(ref code, in context);
+            this.@namespace.AppendFullQualifiedNameTo(ref code, in context);
             code.Append(";\n");
          }
 
-         foreach (var declaration in declarations) {
+         foreach (var declaration in this.declarations) {
             declaration.AppendTo(ref code, context);
          }
 

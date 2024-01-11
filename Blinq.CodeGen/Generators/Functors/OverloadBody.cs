@@ -20,7 +20,7 @@ sealed record OverloadBody: MethodDeclaration.Body {
       for (var parameterIndex = 0; parameterIndex < parameters.Count; parameterIndex++) {
          var parameterName = parameters[parameterIndex].name;
 
-         if (parameterIndex != targetParameterIndex) {
+         if (parameterIndex != this.targetParameterIndex) {
             code.Append(parameterName);
          } else {
             code.Append($"{Identifiers.Functor}.{Identifiers.New}(");

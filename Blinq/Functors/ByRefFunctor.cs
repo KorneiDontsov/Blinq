@@ -8,7 +8,7 @@ public readonly struct ByRefFunctor<TArg, TResult>
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TResult Invoke (in TArg arg) {
-      return @delegate(in arg);
+      return this.@delegate(in arg);
    }
 }
 
@@ -18,7 +18,7 @@ public readonly struct ByRefFunctor<TArg1, TArg2, TResult>
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TResult Invoke (in TArg1 arg1, in TArg2 arg2) {
-      return @delegate(in arg1, in arg2);
+      return this.@delegate(in arg1, in arg2);
    }
 }
 
@@ -28,6 +28,6 @@ public readonly struct ByRefFunctor<TArg1, TArg2, TArg3, TResult>
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TResult Invoke (in TArg1 arg1, in TArg2 arg2, in TArg3 arg3) {
-      return @delegate(in arg1, in arg2, in arg3);
+      return this.@delegate(in arg1, in arg2, in arg3);
    }
 }

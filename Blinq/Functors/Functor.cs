@@ -8,7 +8,7 @@ public readonly struct Functor<TResult>: IFunctor<TResult> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TResult Invoke () {
-      return @delegate();
+      return this.@delegate();
    }
 }
 
@@ -18,7 +18,7 @@ public readonly struct Functor<TArg, TResult>
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TResult Invoke (in TArg arg) {
-      return @delegate(arg);
+      return this.@delegate(arg);
    }
 }
 
@@ -28,7 +28,7 @@ public readonly struct Functor<TArg1, TArg2, TResult>
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TResult Invoke (in TArg1 arg1, in TArg2 arg2) {
-      return @delegate(arg1, arg2);
+      return this.@delegate(arg1, arg2);
    }
 }
 
@@ -38,7 +38,7 @@ public readonly struct Functor<TArg1, TArg2, TArg3, TResult>
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public TResult Invoke (in TArg1 arg1, in TArg2 arg2, in TArg3 arg3) {
-      return @delegate(arg1, arg2, arg3);
+      return this.@delegate(arg1, arg2, arg3);
    }
 }
 

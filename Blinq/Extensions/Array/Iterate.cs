@@ -11,10 +11,10 @@ public struct ArrayIterator<T>: IIterator<T> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool TryPop ([MaybeNullWhen(false)] out T item) {
-      var nextIndex = currentIndex + 1;
-      if (nextIndex < array.Length) {
-         item = array[nextIndex];
-         currentIndex = nextIndex;
+      var nextIndex = this.currentIndex + 1;
+      if (nextIndex < this.array.Length) {
+         item = this.array[nextIndex];
+         this.currentIndex = nextIndex;
          return true;
       }
 
@@ -26,13 +26,13 @@ public struct ArrayIterator<T>: IIterator<T> {
    public void Accept<TAccumulate, TVisitor> (ref TAccumulate state, TVisitor visitor)
    where TVisitor: IIteratorVisitor<T, TAccumulate> {
       int index;
-      for (index = currentIndex + 1; index < array.Length; ++index) {
-         if (visitor.Visit(ref state, in array[index])) {
+      for (index = this.currentIndex + 1; index < this.array.Length; ++index) {
+         if (visitor.Visit(ref state, in this.array[index])) {
             break;
          }
       }
 
-      currentIndex = index;
+      this.currentIndex = index;
    }
 }
 

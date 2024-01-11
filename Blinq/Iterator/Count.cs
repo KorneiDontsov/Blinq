@@ -32,7 +32,7 @@ where TImpl: Iterator.ICountImpl<TCount> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Visit (ref TCount state, in T item) {
-      impl.Increment(ref state);
+      this.impl.Increment(ref state);
       return false;
    }
 }

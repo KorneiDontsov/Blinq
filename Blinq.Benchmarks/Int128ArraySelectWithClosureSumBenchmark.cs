@@ -17,8 +17,8 @@ public class Int128ArraySelectWithClosureSumBenchmark {
    public Int128 For () {
       var additionalValue = this.additionalValue;
       Int128 sum = 0;
-      for (var index = 0; index < array.Length; index++) {
-         var number = array[index];
+      for (var index = 0; index < this.array.Length; index++) {
+         var number = this.array[index];
          checked {
             sum += number * number + additionalValue;
          }
@@ -31,7 +31,7 @@ public class Int128ArraySelectWithClosureSumBenchmark {
    public Int128 ForEach () {
       var additionalValue = this.additionalValue;
       Int128 sum = 0;
-      foreach (var number in array) {
+      foreach (var number in this.array) {
          checked {
             sum += number * number + additionalValue;
          }
@@ -43,14 +43,14 @@ public class Int128ArraySelectWithClosureSumBenchmark {
    [Benchmark]
    public Int128 Linq () {
       var additionalValue = this.additionalValue;
-      return array.Select(number => number * number + additionalValue)
+      return this.array.Select(number => number * number + additionalValue)
          .Aggregate(Int128.Zero, (a, b) => a + b);
    }
 
    [Benchmark]
    public Int128 Blinq () {
       var additionalValue = this.additionalValue;
-      return array.Iterate()
+      return this.array.Iterate()
          .Select(number => number * number + additionalValue)
          .Sum();
    }
@@ -58,7 +58,7 @@ public class Int128ArraySelectWithClosureSumBenchmark {
    [Benchmark]
    public Int128 BlinqByRef () {
       var additionalValue = this.additionalValue;
-      return array.Iterate()
+      return this.array.Iterate()
          .Select((in Int128 number) => number * number + additionalValue)
          .Sum();
    }
@@ -66,7 +66,7 @@ public class Int128ArraySelectWithClosureSumBenchmark {
    [Benchmark]
    public Int128 BlinqByRefWithClosure () {
       var additionalValue = this.additionalValue;
-      return array.Iterate()
+      return this.array.Iterate()
          .Select(
             Functor.New(
                static (in Int128 number, in Int128 additionalValue) => {

@@ -16,18 +16,18 @@ sealed class OverloadDeclarationFactory {
 
    public OverloadDeclarationFactory (OriginInfo originInfo) {
       this.originInfo = originInfo;
-      overloadTypeParameterSymbols =
+      this.overloadTypeParameterSymbols =
          originInfo.signature.symbol
             .TypeParameters
             .Remove(originInfo.functorTypeParameterSymbol);
-      overloadBody =
+      this.overloadBody =
          new OverloadBody {
             targetParameterIndex =
                originInfo.signature.symbol
                   .Parameters
                   .IndexOf(originInfo.functorParameterSymbol),
          };
-      Debug.Assert(overloadBody.targetParameterIndex >= 0);
+      Debug.Assert(this.overloadBody.targetParameterIndex >= 0);
    }
 
    TypeParameterConstraint CreateConstraint (ITypeParameterSymbol typeParameterSymbol) {
@@ -36,52 +36,56 @@ sealed class OverloadDeclarationFactory {
          constraintTypes =
             typeParameterSymbol.ConstraintTypes
                .ToValueList()
-               .ConvertAll(typeResolver!.resolve),
+               .ConvertAll(this.typeResolver!.resolve),
       };
    }
 
    Parameter CreateParameter (IParameterSymbol parameterSymbol) {
       var isFunctorParameter =
-         parameterSymbol.Equals(originInfo.functorParameterSymbol, SymbolEqualityComparer.Default);
+         parameterSymbol.Equals(
+            this.originInfo.functorParameterSymbol,
+            SymbolEqualityComparer.Default
+         );
       return new Parameter {
          name = parameterSymbol.Name,
          type =
-            isFunctorParameter
-               ? overloadInfo!.functorProtoType
-               : typeResolver!.Resolve(parameterSymbol.Type),
+            isFunctorParameter switch {
+               true => this.overloadInfo!.functorProtoType,
+               false => this.typeResolver!.Resolve(parameterSymbol.Type),
+            },
       };
    }
 
    public MethodDeclaration Create (OverloadInfo overloadInfo) {
       this.overloadInfo = overloadInfo;
-      typeResolver =
+      this.typeResolver =
          new ParameterReplacingTypeResolver {
-            replacedParameterSymbol = originInfo.functorTypeParameterSymbol,
+            replacedParameterSymbol = this.originInfo.functorTypeParameterSymbol,
             replacingType = overloadInfo.functorImplType,
          };
       try {
          return new MethodDeclaration {
-            signature = originInfo.signature,
+            signature = this.originInfo.signature,
             typeParameters =
-               overloadTypeParameterSymbols
+               this.overloadTypeParameterSymbols
                   .ToValueList()
                   .ConvertAll(TypeReferenceFactory.CreateTypeParameter),
             constraints =
-               overloadTypeParameterSymbols
+               this.overloadTypeParameterSymbols
                   .Where(typeParameterSymbol => typeParameterSymbol.ConstraintTypes.Length > 0)
-                  .Select(CreateConstraint)
+                  .Select(this.CreateConstraint)
                   .ToArray(),
             parameters =
-               originInfo.signature.symbol
+               this.originInfo.signature.symbol
                   .Parameters
                   .ToValueList()
-                  .ConvertAll(CreateParameter),
-            returnType = typeResolver.Resolve(originInfo.signature.symbol.ReturnType),
-            body = overloadBody,
+                  .ConvertAll(this.CreateParameter),
+            returnType = this.typeResolver.Resolve(this.originInfo.signature.symbol.ReturnType),
+            body = this.overloadBody,
          };
       } finally {
          this.overloadInfo = null;
-         typeResolver = null;
+         this.typeResolver = null;
       }
    }
 }

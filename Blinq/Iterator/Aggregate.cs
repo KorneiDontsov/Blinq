@@ -9,7 +9,7 @@ where TFunctor: IFunctor<TAccumulate, T, TAccumulate> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Visit (ref TAccumulate state, in T item) {
-      state = func.Invoke(in state, in item);
+      state = this.func.Invoke(in state, in item);
       return false;
    }
 }

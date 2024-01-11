@@ -9,26 +9,26 @@ readonly struct MethodSignature: IEquatable<MethodSignature> {
    readonly MethodModifiers _modifiers;
 
    public required IMethodSymbol symbol {
-      get => _symbol;
+      get => this._symbol;
       init {
-         _symbol = value;
-         _modifiers = value.GetMethodModifiers();
+         this._symbol = value;
+         this._modifiers = value.GetMethodModifiers();
       }
    }
 
-   public MethodModifiers modifiers => _modifiers;
-   public Accessibility accessibility => symbol.DeclaredAccessibility;
-   public string name => symbol.Name;
+   public MethodModifiers modifiers => this._modifiers;
+   public Accessibility accessibility => this.symbol.DeclaredAccessibility;
+   public string name => this.symbol.Name;
 
    public bool Equals (MethodSignature other) {
-      return symbol.Equals(other.symbol, SymbolEqualityComparer.Default)
-         && symbol.Parameters.SequenceEqual(other.symbol.Parameters)
-         && symbol.DeclaredAccessibility == other.symbol.DeclaredAccessibility
-         && modifiers == other.modifiers;
+      return this.symbol.Equals(other.symbol, SymbolEqualityComparer.Default)
+         && this.symbol.Parameters.SequenceEqual(other.symbol.Parameters)
+         && this.symbol.DeclaredAccessibility == other.symbol.DeclaredAccessibility
+         && this.modifiers == other.modifiers;
    }
 
    public override bool Equals (object? obj) {
-      return obj is MethodSignature other && Equals(other);
+      return obj is MethodSignature other && this.Equals(other);
    }
 
    public override int GetHashCode () {
@@ -36,6 +36,6 @@ readonly struct MethodSignature: IEquatable<MethodSignature> {
    }
 
    public override string ToString () {
-      return symbol.ToString();
+      return this.symbol.ToString();
    }
 }

@@ -5,31 +5,31 @@ namespace Blinq;
 public struct PrependIterator<T, TImpl>: IIterator<T>
 where TImpl: IIterator<T> {
    TImpl _impl;
-   public required TImpl impl { init => _impl = value; }
+   public required TImpl impl { init => this._impl = value; }
 
    readonly T _element;
-   public required T element { init => _element = value; }
+   public required T element { init => this._element = value; }
 
    bool isStarted;
 
    public bool TryPop ([MaybeNullWhen(false)] out T item) {
-      if (!isStarted) {
-         isStarted = true;
-         item = _element;
+      if (!this.isStarted) {
+         this.isStarted = true;
+         item = this._element;
          return true;
       }
 
-      return _impl.TryPop(out item);
+      return this._impl.TryPop(out item);
    }
 
    public void Accept<TState, TVisitor> (ref TState state, TVisitor visitor)
    where TVisitor: IIteratorVisitor<T, TState> {
-      if (!isStarted) {
-         isStarted = true;
-         if (visitor.Visit(ref state, in _element)) return;
+      if (!this.isStarted) {
+         this.isStarted = true;
+         if (visitor.Visit(ref state, in this._element)) return;
       }
 
-      _impl.Accept(ref state, visitor);
+      this._impl.Accept(ref state, visitor);
    }
 }
 

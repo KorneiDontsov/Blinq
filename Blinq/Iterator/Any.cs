@@ -8,7 +8,7 @@ where TPredicate: IFunctor<T, bool> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Visit (ref bool state, in T item) {
-      var hasAny = predicate.Invoke(in item);
+      var hasAny = this.predicate.Invoke(in item);
       state = hasAny;
       return hasAny;
    }

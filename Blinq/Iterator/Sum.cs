@@ -32,7 +32,7 @@ where TImpl: Iterator.ISumImpl<T, TSum> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Visit (ref TSum state, in T item) {
-      impl.Add(ref state, in item);
+      this.impl.Add(ref state, in item);
       return false;
    }
 }

@@ -22,40 +22,40 @@ sealed record MethodDeclaration: Declaration {
    public override void AppendTo (ref ValueStringBuilder code, in CodeGenContext context) {
       context.indent.AppendTo(ref code);
 
-      var accessibility = signature.accessibility;
+      var accessibility = this.signature.accessibility;
       if (accessibility != Accessibility.NotApplicable) {
          code.Append(accessibility.AsKeywordText());
          code.Append(' ');
       }
 
-      var modifiers = signature.modifiers;
+      var modifiers = this.signature.modifiers;
       if ((modifiers & MethodModifiers.Static) != 0) {
          code.Append("static ");
       }
 
-      returnType.AppendTo(ref code, in context);
+      this.returnType.AppendTo(ref code, in context);
       code.Append(' ');
-      code.Append(signature.name);
+      code.Append(this.signature.name);
 
-      if (typeParameters.Count > 0) {
+      if (this.typeParameters.Count > 0) {
          code.Append(context.symbols.openGenericBracket);
-         typeParameters.AppendAllTo(ref code, in context);
+         this.typeParameters.AppendAllTo(ref code, in context);
          code.Append(context.symbols.closedGenericBracket);
       }
 
       code.Append(" (");
 
-      if (parameters.Count > 0) {
+      if (this.parameters.Count > 0) {
          if ((modifiers & MethodModifiers.Extension) != 0) {
             code.Append("this ");
          }
 
-         parameters.AppendAllTo(ref code, in context);
+         this.parameters.AppendAllTo(ref code, in context);
       }
 
       code.Append(')');
 
-      foreach (var constraint in constraints) {
+      foreach (var constraint in this.constraints) {
          code.Append('\n');
          context.indent.AppendTo(ref code);
          constraint.AppendTo(ref code, in context);
@@ -63,7 +63,7 @@ sealed record MethodDeclaration: Declaration {
 
       code.Append(" {\n");
 
-      body.AppendTo(ref code, context with { indent = context.indent.Child() }, this);
+      this.body.AppendTo(ref code, context with { indent = context.indent.Child() }, this);
 
       context.indent.AppendTo(ref code);
       code.Append("}\n");

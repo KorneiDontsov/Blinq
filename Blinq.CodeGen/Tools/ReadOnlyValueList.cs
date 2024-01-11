@@ -9,8 +9,8 @@ namespace Blinq.CodeGen;
 readonly struct ReadOnlyValueList<T>: IReadOnlyList<T>, IEquatable<ReadOnlyValueList<T>> {
    public required T[] array { private get; init; }
 
-   public int Count => array.Length;
-   public T this [int index] => array[index];
+   public int Count => this.array.Length;
+   public T this [int index] => this.array[index];
 
    public static implicit operator ReadOnlyValueList<T> (T[] array) {
       return new() { array = array };
@@ -23,26 +23,26 @@ readonly struct ReadOnlyValueList<T>: IReadOnlyList<T>, IEquatable<ReadOnlyValue
    public static ReadOnlyValueList<T> empty => Array.Empty<T>();
 
    public ReadOnlySpan<T> AsSpan () {
-      return new ReadOnlySpan<T>(array);
+      return new ReadOnlySpan<T>(this.array);
    }
 
    public ReadOnlySpan<T>.Enumerator GetEnumerator () {
-      return AsSpan().GetEnumerator();
+      return this.AsSpan().GetEnumerator();
    }
 
    IEnumerator<T> IEnumerable<T>.GetEnumerator () {
-      return ((IEnumerable<T>)array).GetEnumerator();
+      return ((IEnumerable<T>)this.array).GetEnumerator();
    }
 
    IEnumerator IEnumerable.GetEnumerator () {
-      return array.GetEnumerator();
+      return this.array.GetEnumerator();
    }
 
    public bool Equals (ReadOnlyValueList<T> other) {
-      if (array.Length != other.array.Length) return false;
+      if (this.array.Length != other.array.Length) return false;
 
-      for (var index = 0; index < array.Length; ++index) {
-         var areEqual = EqualityComparer<T>.Default.Equals(array[index], other.array[index]);
+      for (var index = 0; index < this.array.Length; ++index) {
+         var areEqual = EqualityComparer<T>.Default.Equals(this.array[index], other.array[index]);
          if (!areEqual) return false;
       }
 
@@ -50,14 +50,14 @@ readonly struct ReadOnlyValueList<T>: IReadOnlyList<T>, IEquatable<ReadOnlyValue
    }
 
    public override bool Equals (object? obj) {
-      return obj is ReadOnlyValueList<T> other && Equals(other);
+      return obj is ReadOnlyValueList<T> other && this.Equals(other);
    }
 
    public override int GetHashCode () {
-      return array.GetHashCode();
+      return this.array.GetHashCode();
    }
 
    public ReadOnlyValueList<TResult> ConvertAll<TResult> (Func<T, TResult> selector) {
-      return array.ConvertAll(selector);
+      return this.array.ConvertAll(selector);
    }
 }

@@ -7,10 +7,10 @@ sealed record GenericTypeReference: TypeReference {
    public required ReadOnlyValueList<TypeReference> typeArguments { get; init; }
 
    public override void AppendTo (ref ValueStringBuilder code, in CodeGenContext context) {
-      openType.AppendTo(ref code, in context);
+      this.openType.AppendTo(ref code, in context);
 
       code.Append(context.symbols.openGenericBracket);
-      typeArguments.AppendAllTo(ref code, in context);
+      this.typeArguments.AppendAllTo(ref code, in context);
       code.Append(context.symbols.closedGenericBracket);
    }
 }

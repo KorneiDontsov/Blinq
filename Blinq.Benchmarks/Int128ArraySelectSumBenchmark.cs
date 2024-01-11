@@ -14,8 +14,8 @@ public class Int128ArraySelectSumBenchmark {
    [Benchmark(Baseline = true)]
    public Int128 For () {
       Int128 sum = 0;
-      for (var index = 0; index < array.Length; index++) {
-         var number = array[index];
+      for (var index = 0; index < this.array.Length; index++) {
+         var number = this.array[index];
          checked {
             sum += number * number;
          }
@@ -27,7 +27,7 @@ public class Int128ArraySelectSumBenchmark {
    [Benchmark]
    public Int128 ForEach () {
       Int128 sum = 0;
-      foreach (var number in array) {
+      foreach (var number in this.array) {
          checked {
             sum += number * number;
          }
@@ -38,16 +38,16 @@ public class Int128ArraySelectSumBenchmark {
 
    [Benchmark]
    public Int128 Linq () {
-      return array.Select(number => number * number).Aggregate(Int128.Zero, (a, b) => a + b);
+      return this.array.Select(number => number * number).Aggregate(Int128.Zero, (a, b) => a + b);
    }
 
    [Benchmark]
    public Int128 Blinq () {
-      return array.Iterate().Select(number => number * number).Sum();
+      return this.array.Iterate().Select(number => number * number).Sum();
    }
 
    [Benchmark]
    public Int128 BlinqByRef () {
-      return array.Iterate().Select((in Int128 number) => number * number).Sum();
+      return this.array.Iterate().Select((in Int128 number) => number * number).Sum();
    }
 }

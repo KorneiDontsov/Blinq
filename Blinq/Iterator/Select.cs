@@ -12,7 +12,7 @@ where TImpl: IIteratorVisitor<TOut, TState> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Visit (ref TState state, in TIn item) {
-      return impl.Visit(ref state, selector.Invoke(in item));
+      return this.impl.Visit(ref state, this.selector.Invoke(in item));
    }
 }
 
@@ -20,15 +20,15 @@ public struct SelectIterator<TOut, TIn, TSelector, TImpl>: IIterator<TOut>
 where TSelector: IFunctor<TIn, TOut>
 where TImpl: IIterator<TIn> {
    TImpl _impl;
-   public required TImpl impl { init => _impl = value; }
+   public required TImpl impl { init => this._impl = value; }
 
    readonly TSelector _selector;
-   public required TSelector selector { init => _selector = value; }
+   public required TSelector selector { init => this._selector = value; }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool TryPop ([MaybeNullWhen(false)] out TOut item) {
-      if (_impl.TryPop(out var itemProto)) {
-         item = _selector.Invoke(itemProto);
+      if (this._impl.TryPop(out var itemProto)) {
+         item = this._selector.Invoke(itemProto);
          return true;
       }
 
@@ -39,11 +39,11 @@ where TImpl: IIterator<TIn> {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void Accept<TState, TVisitor> (ref TState state, TVisitor visitor)
    where TVisitor: IIteratorVisitor<TOut, TState> {
-      _impl.Accept(
+      this._impl.Accept(
          ref state,
          new SelectVisitor<TIn, TState, TOut, TSelector, TVisitor> {
             impl = visitor,
-            selector = _selector,
+            selector = this._selector,
          }
       );
    }

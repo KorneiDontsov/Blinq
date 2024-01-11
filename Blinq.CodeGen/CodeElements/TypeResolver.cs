@@ -13,7 +13,7 @@ class TypeResolver {
 
       return new GenericTypeReference {
          openType = type,
-         typeArguments = typeArgumentSymbols.ToValueList().ConvertAll(resolve),
+         typeArguments = typeArgumentSymbols.ToValueList().ConvertAll(this.resolve),
       };
    }
 
@@ -23,14 +23,14 @@ class TypeResolver {
 
    public virtual TypeReference Resolve (ITypeSymbol typeSymbol) {
       return typeSymbol switch {
-         INamedTypeSymbol namedType => ResolveNamed(namedType),
-         ITypeParameterSymbol typeParameter => ResolveTypeParameter(typeParameter),
+         INamedTypeSymbol namedType => this.ResolveNamed(namedType),
+         ITypeParameterSymbol typeParameter => this.ResolveTypeParameter(typeParameter),
          _ => TypeReferenceFactory.CreateCommonType(typeSymbol),
       };
    }
 
    public TypeResolver () {
-      resolve = Resolve;
+      this.resolve = this.Resolve;
    }
 
    public static readonly TypeResolver @default = new();

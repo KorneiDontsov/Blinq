@@ -18,16 +18,16 @@ where TOut: class
 where TIn: TOut
 where TImpl: IIterator<TIn> {
    TImpl _impl;
-   public required TImpl impl { init => _impl = value; }
+   public required TImpl impl { init => this._impl = value; }
 
    public bool TryPop ([MaybeNullWhen(false)] out TOut item) {
       Unsafe.SkipInit(out item);
-      return _impl.TryPop(out Unsafe.As<TOut?, TIn?>(ref item));
+      return this._impl.TryPop(out Unsafe.As<TOut?, TIn?>(ref item));
    }
 
    public void Accept<TState, TVisitor> (ref TState state, TVisitor visitor)
    where TVisitor: IIteratorVisitor<TOut, TState> {
-      _impl.Accept(
+      this._impl.Accept(
          ref state,
          new UpcastVisitor<TIn, TOut, TState, TVisitor> { impl = visitor }
       );
@@ -43,8 +43,8 @@ public static partial class Iterator {
       TypePin<TResult> tResult = default
    )
    where T: TResult
-   where TResult: class
-   where TIterator: IIterator<T> {
+   where TIterator: IIterator<T>
+   where TResult: class {
       _ = tResult;
       return new() { value = new() { impl = iterator } };
    }

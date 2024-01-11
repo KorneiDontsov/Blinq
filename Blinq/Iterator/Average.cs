@@ -10,8 +10,8 @@ where TImpl: Iterator.ISumImpl<T, TSum>, Iterator.ICountImpl<TCount> {
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public bool Visit (ref (TSum sum, TCount count) state, in T item) {
-      impl.Add(ref state.sum, in item);
-      impl.Increment(ref state.count);
+      this.impl.Add(ref state.sum, in item);
+      this.impl.Increment(ref state.count);
       return false;
    }
 }
