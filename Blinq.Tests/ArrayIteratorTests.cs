@@ -2,10 +2,10 @@ using NUnit.Framework;
 
 namespace Blinq.Tests;
 
-public abstract class ArrayIteratorTests<T>: IteratorTestsTemplate<T, ArrayIterator<T>> {
+public abstract class ArrayIteratorTests<T>: IteratorTests<T, ArrayIterator<T>> {
    private protected ArrayIteratorTests (IArrayFactory<T> arrayFactory): base(arrayFactory) { }
 
-   protected override ArrayIterator<T> ToIterator (T[] array) {
+   protected override ArrayIterator<T> GetActualResult (T[] array) {
       return array.Iterate();
    }
 }
