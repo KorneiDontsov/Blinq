@@ -5,7 +5,7 @@ using BenchmarkDotNet.Attributes;
 namespace Blinq.Benchmarks;
 
 [MemoryDiagnoser]
-public class Int128ArraySelectAggregateBenchmark {
+public class Int128ArraySelectAggregateBenchmarks {
    readonly Int128[] array =
       Enumerable.Range(0, 100_000)
          .Select(static number => (Int128)number)

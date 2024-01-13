@@ -1,40 +1,41 @@
+using System;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
 
 namespace Blinq.Benchmarks;
 
 [MemoryDiagnoser]
-public class Int64ArraySelectAggregateBenchmark {
-   readonly long[] array =
-      Enumerable.Range(0, 100_000)
-         .Select(static number => (long)number)
+public class Int64X8ArraySelectAggregateBenchmarks {
+   readonly Int64X8[] array =
+      Enumerable.Range(0, 10_000)
+         .Select(static number => new Int64X8 { Number1 = number, Number2 = number })
          .ToArray();
 
    [Benchmark(Baseline = true)]
-   public long Linq () {
-      return this.array.Select(static number => number * number)
+   public Int128 Linq () {
+      return this.array.Select(static item => item.Number1 * item.Number2)
          .Aggregate(0L, static (a, b) => a + b);
    }
 
    [Benchmark]
    public long Blinq () {
       return this.array.Iterate()
-         .Select(static number => number * number)
+         .Select(static item => item.Number1 * item.Number2)
          .Aggregate(0L, static (a, b) => a + b);
    }
 
    [Benchmark]
    public long BlinqByRef () {
       return this.array.Iterate()
-         .Select(static (in long number) => number * number)
+         .Select(static (in Int64X8 item) => item.Number1 * item.Number2)
          .Aggregate(0L, static (a, b) => a + b);
    }
 
    [Benchmark]
    public long ForEach () {
-      long sum = 0;
-      foreach (var number in this.array) {
-         sum += number * number;
+      var sum = 0L;
+      foreach (var item in this.array) {
+         sum += item.Number1 * item.Number2;
       }
 
       return sum;
@@ -42,10 +43,10 @@ public class Int64ArraySelectAggregateBenchmark {
 
    [Benchmark]
    public long For () {
-      long sum = 0;
+      var sum = 0L;
       for (var index = 0; index < this.array.Length; index++) {
-         var number = this.array[index];
-         sum += number * number;
+         var item = this.array[index];
+         sum += item.Number1 * item.Number2;
       }
 
       return sum;
@@ -53,10 +54,10 @@ public class Int64ArraySelectAggregateBenchmark {
 
    [Benchmark]
    public long ForByRef () {
-      long sum = 0;
+      var sum = 0L;
       for (var index = 0; index < this.array.Length; index++) {
-         ref readonly var number = ref this.array[index];
-         sum += number * number;
+         ref readonly var item = ref this.array[index];
+         sum += item.Number1 * item.Number2;
       }
 
       return sum;
