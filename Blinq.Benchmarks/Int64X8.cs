@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Blinq.Benchmarks;
 
 [StructLayout(LayoutKind.Sequential)]
+[SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
 struct Int64X8 {
    public long Number0;
    public long Number1;

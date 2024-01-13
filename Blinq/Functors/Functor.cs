@@ -130,21 +130,21 @@ public static class Functor {
 
    public static Pin<
       IFunctor<TArg, TResult>,
-      Closure<TArg, TResult, TState, TImpl>
+      Closure<TState, TArg, TResult, TImpl>
    > Bind<TArg, TResult, TState, TImpl> (
-      this Pin<IFunctor<TArg, TState, TResult>, TImpl> impl,
+      this Pin<IFunctor<TState, TArg, TResult>, TImpl> impl,
       TState state
-   ) where TImpl: IFunctor<TArg, TState, TResult> {
+   ) where TImpl: IFunctor<TState, TArg, TResult> {
       return new() { value = new() { impl = impl, state = state } };
    }
 
    public static Pin<
       IFunctor<TArg1, TArg2, TResult>,
-      Closure<TArg1, TArg2, TResult, TState, TImpl>
-   > Bind<TArg1, TArg2, TResult, TState, TImpl> (
-      this Pin<IFunctor<TArg1, TArg2, TState, TResult>, TImpl> impl,
+      Closure<TState, TArg1, TArg2, TResult, TImpl>
+   > Bind<TState, TArg1, TArg2, TResult, TImpl> (
+      this Pin<IFunctor<TState, TArg1, TArg2, TResult>, TImpl> impl,
       TState state
-   ) where TImpl: IFunctor<TArg1, TArg2, TState, TResult> {
+   ) where TImpl: IFunctor<TState, TArg1, TArg2, TResult> {
       return new() { value = new() { impl = impl, state = state } };
    }
 }

@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 
 namespace Blinq;
 
+public readonly struct NoneOption { }
+
 /// <summary>Represents an optional value.</summary>
 /// <typeparam name="T">The type of a value.</typeparam>
 public readonly partial struct Option<T> {
@@ -23,12 +25,26 @@ public readonly partial struct Option<T> {
          this._hasValue = true;
       }
    }
+
+   /// <returns>An <see cref="Option{T}" /> without value.</returns>
+   public static Option<T> none => default;
+
+   /// <returns>
+   ///    An <see cref="Option{T}" /> with the specified <paramref name="value" />.
+   /// </returns>
+   public static implicit operator Option<T> (T value) {
+      return new Option<T> { value = value };
+   }
+
+   /// <returns>An <see cref="Option{T}" /> without value.</returns>
+   public static implicit operator Option<T> (NoneOption none) {
+      _ = none;
+      return default;
+   }
 }
 
 public static partial class Option {
-   public readonly struct None { }
-
-   public static None none => default;
+   public static NoneOption none => default;
 
    /// <returns>
    ///    An <see cref="Option{T}" /> with the specified <paramref name="value" />.
@@ -121,26 +137,9 @@ public static partial class Option {
 }
 
 public readonly partial struct Option<T>: IEquatable<Option<T>> {
-   /// <returns>An <see cref="Option{T}" /> without value.</returns>
-   public static Option<T> none => default;
-
-   /// <returns>
-   ///    An <see cref="Option{T}" /> with the specified <paramref name="value" />.
-   /// </returns>
-   public static implicit operator Option<T> (T value) {
-      return new Option<T> { value = value };
-   }
-
-   /// <returns>An <see cref="Option{T}" /> without value.</returns>
-   public static implicit operator Option<T> (Option.None none) {
-      _ = none;
-      return default;
-   }
-
    public override int GetHashCode () {
       return this.hasValue ? this._value!.GetHashCode() : 0;
    }
-
 
    public bool Equals (Option<T> other) {
       return Option.Equals(in this, in other);

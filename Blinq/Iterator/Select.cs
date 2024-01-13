@@ -32,7 +32,7 @@ where TImpl: IIterator<TIn> {
          return true;
       }
 
-      Advanced.SkipInit(out item);
+      Unsafe.SkipInit(out item);
       return false;
    }
 
