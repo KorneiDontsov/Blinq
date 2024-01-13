@@ -17,7 +17,7 @@ public readonly partial struct Option<T> {
 
    public T value {
       internal get {
-         Assert.Debug(this.hasValue);
+         Ensure.Debug(this.hasValue);
          return this._value!;
       }
       init {
@@ -56,7 +56,7 @@ public static partial class Option {
    /// <returns>The underlying value of <paramref name="option" />.</returns>
    /// <exception cref="AssertException"><paramref name="option" /> has no value.</exception>
    public static ref readonly T Value<T> (this in Option<T> option) {
-      Assert.That(option.hasValue);
+      Ensure.That(option.hasValue);
       return ref option._value!;
    }
 
@@ -68,10 +68,10 @@ public static partial class Option {
    public static void Deconstruct<T> (
       this in Option<T> option,
       out bool hasValue,
-      out T valueOrDefault
+      out T? valueOrDefault
    ) {
-      hasValue = option.hasValue;
-      valueOrDefault = option.value;
+      hasValue = option._hasValue;
+      valueOrDefault = option._value;
    }
 
    /// <param name="elseValue">
@@ -115,7 +115,7 @@ public static partial class Option {
    /// <returns>The underlying value of <paramref name="option" />.</returns>
    /// <exception cref="AssertException"><paramref name="option" />> has no value.</exception>
    public static ref readonly T OrFail<T> (this in Option<T> option, string message) {
-      Assert.That(option.hasValue, message);
+      Ensure.That(option.hasValue, message);
       return ref option._value!;
    }
 
